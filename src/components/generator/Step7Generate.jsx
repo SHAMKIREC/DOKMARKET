@@ -6,6 +6,7 @@ import { getCategoryRules, getSelectedRequirementTexts, normalizeCategoryId } fr
 import { validateProductCircumstances } from "@/components/generator/validation";
 
 const COLLECTIVE_PRICE_PER = 790;
+const SOLO_PRICE = 800;
 
 function isNameValid(name) {
   const value = String(name || "").trim();
@@ -53,120 +54,152 @@ function addTextError(errors, value, message, min = 10) {
   else if (isGibberish(text)) errors.push(`${message}: текст похож на случайный набор символов`);
 }
 
-function auditCourse(circ, selected, errors, warnings) {
-  addTextError(errors, circ.productName, "Шаг 5 — укажите название онлайн-курса", 2);
-  if (!positive(circ.purchaseAmount)) errors.push("Шаг 5 — укажите стоимость онлайн-курса");
-  if (circ.purchaseDate && isFutureDate(circ.purchaseDate)) errors.push("Шаг 5 — дата оплаты курса не может быть в будущем");
-  addTextError(errors, circ.description, "Шаг 5 — подробно опишите ситуацию", 50);
+function auditCourse(circ, selected, errors, warnings, prefix = "Шаг 5") {
+  addTextError(errors, circ.productName, `${prefix} — укажите название онлайн-курса`, 2);
+  if (!positive(circ.purchaseAmount)) errors.push(`${prefix} — укажите стоимость онлайн-курса`);
+  if (circ.purchaseDate && isFutureDate(circ.purchaseDate)) errors.push(`${prefix} — дата оплаты курса не может быть в будущем`);
+  addTextError(errors, circ.description, `${prefix} — подробно опишите ситуацию`, 50);
 
   const refund = Number(circ.refundAmount || 0);
   const purchase = Number(circ.purchaseAmount || 0);
-  if (refund < 0) errors.push("Шаг 5 — сумма возврата не может быть отрицательной");
-  if (refund > purchase && purchase > 0) warnings.push("Сумма возврата выше стоимости курса. Проверьте, что разница обоснована отдельными расходами или убытками.");
+  if (refund < 0) errors.push(`${prefix} — сумма возврата не может быть отрицательной`);
+  if (refund > purchase && purchase > 0) warnings.push(`${prefix} — сумма возврата выше стоимости курса. Проверьте обоснование разницы.`);
 
   if (selected.has("poor_quality_service") && !String(circ.serviceDefects || "").trim() && !String(circ.actualResult || "").trim()) {
-    errors.push("Шаг 5 — для требования из-за недостатков обучения опишите, в чём именно недостаток услуги");
+    errors.push(`${prefix} — для требований из-за недостатков обучения опишите конкретный недостаток услуги`);
   }
   if (selected.has("refund_refused") && !circ.refundRequestDate && !String(circ.supportResponse || "").trim()) {
-    warnings.push("Вы указали отказ в возврате, но не указали дату обращения или ответ поддержки.");
-  }
-  if (selected.has("credit_payment") && !circ.creditOrInstallment) {
-    warnings.push("Отмечена оплата кредитными средствами, но переключатель «кредит / рассрочка» не включён.");
+    warnings.push(`${prefix} — указан отказ в возврате, но нет даты обращения или ответа поддержки.`);
   }
   if (circ.refundRequestDate && circ.purchaseDate && parseDate(circ.refundRequestDate) < parseDate(circ.purchaseDate)) {
-    errors.push("Шаг 5 — дата требования о возврате не может быть раньше даты оплаты курса");
+    errors.push(`${prefix} — дата требования о возврате не может быть раньше даты оплаты курса`);
   }
   if (selected.has("voluntary_withdrawal") && selected.has("poor_quality_service")) {
-    warnings.push("Одновременно выбраны отказ от дальнейшего обучения и недостатки услуги. В документе эти основания будут изложены раздельно.");
+    warnings.push(`${prefix} — одновременно выбраны обычный отказ от обучения и недостатки услуги; в документе основания будут разделены.`);
   }
 }
 
-function auditDebt(circ, selected, errors, warnings) {
-  if (!positive(circ.debtAmount)) errors.push("Шаг 5 — укажите основную сумму долга");
-  addTextError(errors, circ.description, "Шаг 5 — подробно опишите происхождение долга", 50);
-  if (circ.contractDate && isFutureDate(circ.contractDate)) errors.push("Шаг 5 — дата расписки или договора не может быть в будущем");
-  if (circ.moneyTransferDate && isFutureDate(circ.moneyTransferDate)) errors.push("Шаг 5 — дата передачи денег не может быть в будущем");
+function auditDebt(circ, selected, errors, warnings, prefix = "Шаг 5") {
+  if (!positive(circ.debtAmount)) errors.push(`${prefix} — укажите основную сумму долга`);
+  addTextError(errors, circ.description, `${prefix} — подробно опишите происхождение долга`, 50);
+  if (circ.contractDate && isFutureDate(circ.contractDate)) errors.push(`${prefix} — дата расписки или договора не может быть в будущем`);
+  if (circ.moneyTransferDate && isFutureDate(circ.moneyTransferDate)) errors.push(`${prefix} — дата передачи денег не может быть в будущем`);
   if (circ.repaymentDate && circ.contractDate && parseDate(circ.repaymentDate) < parseDate(circ.contractDate)) {
-    errors.push("Шаг 5 — срок возврата не может быть раньше даты расписки или договора");
+    errors.push(`${prefix} — срок возврата не может быть раньше даты расписки или договора`);
   }
 
   const principal = Number(circ.debtAmount || 0);
   const returned = Number(circ.returnedAmount || 0);
   const remaining = Number(circ.remainingDebtAmount || 0);
-  if (returned < 0 || remaining < 0) errors.push("Шаг 5 — суммы частичного возврата и остатка не могут быть отрицательными");
-  if (returned > principal && principal > 0) errors.push("Шаг 5 — уже возвращённая сумма не может превышать исходный долг");
-  if (remaining > principal && principal > 0) errors.push("Шаг 5 — остаток долга не может превышать исходную сумму");
+  if (returned < 0 || remaining < 0) errors.push(`${prefix} — суммы частичного возврата и остатка не могут быть отрицательными`);
+  if (returned > principal && principal > 0) errors.push(`${prefix} — уже возвращённая сумма не может превышать исходный долг`);
+  if (remaining > principal && principal > 0) errors.push(`${prefix} — остаток долга не может превышать исходную сумму`);
   if (returned > 0 && remaining > 0 && Math.abs((returned + remaining) - principal) > 1) {
-    warnings.push("Проверьте расчёт: возвращённая сумма + остаток не совпадают с исходной суммой долга.");
+    warnings.push(`${prefix} — возвращённая сумма + остаток не совпадают с исходной суммой долга.`);
   }
 
-  if (!circ.repaymentDate && !selected.has("no_due_date") && !circ.demandDate) {
-    warnings.push("Срок возврата не указан. Для займа без срока важно зафиксировать дату требования о возврате.");
+  const noDueDate = selected.has("no_due_date") || (!circ.repaymentDate && Boolean(circ.demandDate));
+  if (!circ.repaymentDate && !noDueDate && !circ.demandDate) {
+    warnings.push(`${prefix} — срок возврата не указан. Для займа без срока важно зафиксировать дату требования о возврате.`);
   }
-  if (selected.has("no_due_date") && !circ.demandDate) {
-    errors.push("Шаг 5 — для займа без установленного срока укажите дату предъявления требования о возврате");
-  }
-  if (circ.demandDate && isFutureDate(circ.demandDate)) errors.push("Шаг 5 — дата требования о возврате не может быть в будущем");
+  if (selected.has("no_due_date") && !circ.demandDate) errors.push(`${prefix} — для займа без установленного срока укажите дату предъявления требования о возврате`);
+  if (circ.demandDate && isFutureDate(circ.demandDate)) errors.push(`${prefix} — дата требования о возврате не может быть в будущем`);
   if (circ.demandDate && circ.contractDate && parseDate(circ.demandDate) < parseDate(circ.contractDate)) {
-    errors.push("Шаг 5 — требование о возврате не может быть направлено раньше возникновения займа");
+    errors.push(`${prefix} — требование о возврате не может быть направлено раньше возникновения займа`);
   }
   if ((selected.has("interest_required") || circ.interestRequired) && circ.interestRate && !nonNegative(circ.interestRate)) {
-    errors.push("Шаг 5 — процентная ставка указана некорректно");
+    errors.push(`${prefix} — процентная ставка указана некорректно`);
   }
   if (selected.has("interest_required") || circ.interestRequired) {
-    warnings.push("Проценты по ст. 395 ГК РФ должны рассчитываться по ключевой ставке, действовавшей в соответствующие периоды, если иной размер не установлен законом или договором.");
+    warnings.push(`${prefix} — проценты по ст. 395 ГК РФ требуют расчёта по ставкам соответствующих периодов, если иной размер не установлен законом или договором.`);
   }
+}
+
+function auditCategory(type, subtype, circ, selected, evidence, errors, warnings, prefix = "Шаг 5") {
+  if (type === "labor") {
+    if (!circ.workStart) errors.push(`${prefix} — укажите дату начала работы`);
+    if (circ.workStart && isFutureDate(circ.workStart)) errors.push(`${prefix} — дата начала работы не может быть в будущем`);
+    if (!String(circ.workplace || "").trim()) errors.push(`${prefix} — укажите место выполнения работы`);
+    addTextError(errors, circ.description, `${prefix} — подробно опишите трудовую ситуацию`, 30);
+    const moneySubtypes = new Set(["unpaid-wages", "dismissal-payment", "delayed-leave-or-sick-pay", "unpaid-overtime"]);
+    if (moneySubtypes.has(subtype) && !positive(circ.debtAmount)) errors.push(`${prefix} — укажите сумму задолженности`);
+    if (Number(circ.partialPaymentAmount || 0) > Number(circ.debtAmount || 0) && positive(circ.debtAmount)) {
+      errors.push(`${prefix} — частичная выплата не может превышать начисленную задолженность`);
+    }
+  } else if (type === "product") {
+    Object.values(validateProductCircumstances(circ)).forEach(message => errors.push(`${prefix} — ${message}`));
+    if (circ.purchaseDate && isFutureDate(circ.purchaseDate)) errors.push(`${prefix} — дата покупки не может быть в будущем`);
+    if (circ.defectFoundDate && circ.purchaseDate && parseDate(circ.defectFoundDate) < parseDate(circ.purchaseDate)) {
+      errors.push(`${prefix} — недостаток не может быть обнаружен раньше покупки`);
+    }
+  } else if (type === "course") {
+    auditCourse(circ, selected, errors, warnings, prefix);
+  } else if (type === "debt") {
+    auditDebt(circ, selected, errors, warnings, prefix);
+  }
+
+  const selectedEvidence = Array.isArray(evidence) ? evidence : [];
+  if (!selectedEvidence.length) errors.push(`${prefix.replace("Шаг 5", "Шаг 6")} — выберите доказательства или вариант «Нет доказательств»`);
+  if (selectedEvidence.includes("Нет доказательств") && selectedEvidence.length > 1) {
+    errors.push(`${prefix.replace("Шаг 5", "Шаг 6")} — «Нет доказательств» нельзя выбирать одновременно с другими доказательствами`);
+  }
+}
+
+function memberData(member = {}, fallbackOptions = [], fallbackSubtype = "") {
+  const claimant = member.claimantData || member.claimData?.workers?.[0] || member.claimData?.claimant || member;
+  const evidenceData = member.evidenceData || member.claimData?.evidenceData || {};
+  return {
+    claimant,
+    circumstances: member.circumstancesData || member.circumstances || member.claimData?.circumstances || {},
+    evidence: Array.isArray(evidenceData.selected) ? evidenceData.selected : Array.isArray(member.evidence) ? member.evidence : member.claimData?.evidence || [],
+    selectedLegalOptions: Array.isArray(member.selectedLegalOptions) && member.selectedLegalOptions.length ? member.selectedLegalOptions : member.claimData?.selectedLegalOptions || fallbackOptions,
+    subtype: member.subtype || member.claimData?.subtype || fallbackSubtype,
+  };
+}
+
+function validateClaimant(worker, errors, prefix) {
+  if (!isNameValid(worker?.name)) errors.push(`${prefix}: укажите корректные ФИО`);
+  if (!String(worker?.address || "").trim() || String(worker.address).trim().length < 8) errors.push(`${prefix}: укажите адрес`);
+  if (!isPhoneValid(worker?.phone)) errors.push(`${prefix}: укажите корректный номер телефона`);
+  if (!isEmailValid(worker?.email)) errors.push(`${prefix}: укажите корректный email`);
 }
 
 function runFullAudit(claimData) {
   const errors = [];
   const warnings = [];
   const type = normalizeCategoryId(claimData.type);
-  const circ = claimData.circumstances || {};
-  const selected = new Set(claimData.selectedLegalOptions || []);
-  const workers = claimData.workers || [];
+  const respondent = claimData.employer || claimData.respondent || {};
+  const collective = claimData.mode === "collective";
 
   if (!type) errors.push("Шаг 1 — выберите направление спора");
-  if (!workers.length) errors.push("Шаг 4 — добавьте заявителя");
-  workers.forEach((worker, index) => {
-    const prefix = workers.length > 1 ? `Шаг 4 — заявитель ${index + 1}` : "Шаг 4 — заявитель";
-    if (!isNameValid(worker.name)) errors.push(`${prefix}: укажите корректные ФИО`);
-    if (!String(worker.address || "").trim() || String(worker.address).trim().length < 8) errors.push(`${prefix}: укажите адрес`);
-    if (!isPhoneValid(worker.phone)) errors.push(`${prefix}: укажите корректный номер телефона`);
-    if (!isEmailValid(worker.email)) errors.push(`${prefix}: укажите корректный email`);
-  });
-
-  const respondent = claimData.employer || {};
   if (!String(respondent.name || "").trim()) errors.push("Шаг 3 — укажите ответчика");
   if (!String(respondent.address || "").trim()) errors.push("Шаг 3 — укажите адрес ответчика");
   if (respondent.inn && !/^\d{10}$|^\d{12}$/.test(String(respondent.inn))) errors.push("Шаг 3 — ИНН должен содержать 10 или 12 цифр");
   if (respondent.ogrn && !/^\d{13}$|^\d{15}$/.test(String(respondent.ogrn))) errors.push("Шаг 3 — ОГРН/ОГРНИП должен содержать 13 или 15 цифр");
 
-  if (type === "labor") {
-    if (!circ.workStart) errors.push("Шаг 5 — укажите дату начала работы");
-    if (circ.workStart && isFutureDate(circ.workStart)) errors.push("Шаг 5 — дата начала работы не может быть в будущем");
-    if (!String(circ.workplace || "").trim()) errors.push("Шаг 5 — укажите место выполнения работы");
-    addTextError(errors, circ.description, "Шаг 5 — подробно опишите трудовую ситуацию", 30);
-    const moneySubtypes = new Set(["unpaid-wages", "dismissal-payment", "delayed-leave-or-sick-pay", "unpaid-overtime"]);
-    if (moneySubtypes.has(claimData.subtype) && !positive(circ.debtAmount)) errors.push("Шаг 5 — укажите сумму задолженности");
-    if (Number(circ.partialPaymentAmount || 0) > Number(circ.debtAmount || 0) && positive(circ.debtAmount)) errors.push("Шаг 5 — частичная выплата не может превышать начисленную задолженность");
-  } else if (type === "product") {
-    Object.values(validateProductCircumstances(circ)).forEach(message => errors.push(`Шаг 5 — ${message}`));
-    if (circ.purchaseDate && isFutureDate(circ.purchaseDate)) errors.push("Шаг 5 — дата покупки не может быть в будущем");
-    if (circ.defectFoundDate && circ.purchaseDate && parseDate(circ.defectFoundDate) < parseDate(circ.purchaseDate)) errors.push("Шаг 5 — недостаток не может быть обнаружен раньше покупки");
-  } else if (type === "course") {
-    auditCourse(circ, selected, errors, warnings);
-  } else if (type === "debt") {
-    auditDebt(circ, selected, errors, warnings);
-  }
-
-  const evidence = Array.isArray(claimData.evidence) ? claimData.evidence : [];
-  if (!evidence.length) errors.push("Шаг 6 — выберите доказательства или вариант «Нет доказательств»");
-  if (evidence.includes("Нет доказательств") && evidence.length > 1) errors.push("Шаг 6 — «Нет доказательств» нельзя выбирать одновременно с другими доказательствами");
-
-  if (claimData.mode === "collective" && claimData.collectiveFinalized) {
+  if (collective && claimData.collectiveFinalized) {
     const members = claimData.collectiveMembers || [];
-    if (members.length < 2 && workers.length < 2) errors.push("Коллективная претензия должна содержать минимум двух заполненных заявителей");
+    if (members.length < 2) errors.push("Совместная претензия должна содержать минимум двух полностью заполненных заявителей");
+    members.forEach((member, index) => {
+      const data = memberData(member, claimData.selectedLegalOptions || [], claimData.subtype || "");
+      const label = `Заявитель ${index + 1}`;
+      validateClaimant(data.claimant, errors, `Шаг 4 — ${label}`);
+      auditCategory(type, data.subtype, data.circumstances, new Set(data.selectedLegalOptions || []), data.evidence, errors, warnings, `Шаг 5 — ${label}`);
+    });
+  } else {
+    const workers = claimData.workers || [];
+    if (!workers.length) errors.push("Шаг 4 — добавьте заявителя");
+    workers.forEach((worker, index) => validateClaimant(worker, errors, workers.length > 1 ? `Шаг 4 — заявитель ${index + 1}` : "Шаг 4 — заявитель"));
+    auditCategory(
+      type,
+      claimData.subtype || "",
+      claimData.circumstances || {},
+      new Set(claimData.selectedLegalOptions || []),
+      claimData.evidence || [],
+      errors,
+      warnings,
+      "Шаг 5",
+    );
   }
 
   return { errors: [...new Set(errors)], warnings: [...new Set(warnings)], passed: errors.length === 0 };
@@ -174,6 +207,17 @@ function runFullAudit(claimData) {
 
 function amountPreview(claimData) {
   const type = normalizeCategoryId(claimData.type);
+  if (claimData.mode === "collective" && claimData.collectiveFinalized) {
+    const members = claimData.collectiveMembers || [];
+    const total = members.reduce((sum, member) => {
+      const circ = member.circumstancesData || member.circumstances || {};
+      if (type === "labor") return sum + Number(circ.outstandingDebtAmount || circ.debtAmount || 0);
+      if (type === "product" || type === "course") return sum + Number(circ.refundAmount || circ.purchaseAmount || 0);
+      if (type === "debt") return sum + Number(circ.remainingDebtAmount || circ.debtAmount || 0);
+      return sum;
+    }, 0);
+    return total || null;
+  }
   const circ = claimData.circumstances || {};
   if (type === "labor") return circ.outstandingDebtAmount ?? circ.debtAmount;
   if (type === "product" || type === "course") return circ.refundAmount || circ.purchaseAmount;
@@ -204,7 +248,7 @@ export default function Step7Generate({ claimData, reset, prevStep, onCollective
   const requirements = useMemo(() => getSelectedRequirementTexts(type, claimData.selectedLegalOptions || []), [type, claimData.selectedLegalOptions]);
   const isCollective = claimData.mode === "collective";
   const memberCount = (claimData.collectiveMembers || []).length || claimData.workers?.length || 1;
-  const price = isCollective && claimData.collectiveFinalized ? memberCount * COLLECTIVE_PRICE_PER : 800;
+  const price = isCollective && claimData.collectiveFinalized ? memberCount * COLLECTIVE_PRICE_PER : SOLO_PRICE;
 
   const check = () => {
     setAudit(runFullAudit(claimData));
@@ -221,7 +265,13 @@ export default function Step7Generate({ claimData, reset, prevStep, onCollective
         if (ok === false) throw new Error("collective-save");
         return;
       }
-      createDocument({ type: claimData.type, subtype: claimData.subtype || "", respondent_name: claimData.employer?.name || "", claim_data: claimData, status: "ready" });
+      createDocument({
+        type: claimData.type,
+        subtype: claimData.subtype || "",
+        respondent_name: claimData.employer?.name || "",
+        claim_data: claimData,
+        status: "ready",
+      });
       onSuccessfulSave?.();
       setGenerated(true);
     } catch {
@@ -241,7 +291,8 @@ export default function Step7Generate({ claimData, reset, prevStep, onCollective
 
   function downloadDOCX() {
     try {
-      downloadBlob(buildDocxBlob(claimData), `pretenziya_${type}_${Date.now()}.docx`);
+      const mode = isCollective ? "collective" : "solo";
+      downloadBlob(buildDocxBlob(claimData), `pretenziya_${type}_${mode}_${Date.now()}.docx`);
     } catch {
       setMessage("Не удалось сформировать DOCX.");
     }
@@ -278,10 +329,10 @@ export default function Step7Generate({ claimData, reset, prevStep, onCollective
                 <div style={box}>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 10 }}>
                     <div><span style={{ color: "#64748b", fontSize: ".72rem" }}>Ответчик</span><p style={{ color: "white", margin: "3px 0 0", fontSize: ".84rem" }}>{claimData.employer?.name || "—"}</p></div>
-                    <div><span style={{ color: "#64748b", fontSize: ".72rem" }}>Заявителей</span><p style={{ color: "white", margin: "3px 0 0", fontSize: ".84rem" }}>{claimData.workers?.length || memberCount}</p></div>
-                    <div><span style={{ color: "#64748b", fontSize: ".72rem" }}>Основная сумма</span><p style={{ color: "white", margin: "3px 0 0", fontSize: ".84rem" }}>{amountPreview(claimData) ? `${Number(amountPreview(claimData)).toLocaleString("ru-RU")} ₽` : "—"}</p></div>
+                    <div><span style={{ color: "#64748b", fontSize: ".72rem" }}>Заявителей</span><p style={{ color: "white", margin: "3px 0 0", fontSize: ".84rem" }}>{memberCount}</p></div>
+                    <div><span style={{ color: "#64748b", fontSize: ".72rem" }}>{isCollective ? "Сумма по заявителям" : "Основная сумма"}</span><p style={{ color: "white", margin: "3px 0 0", fontSize: ".84rem" }}>{amountPreview(claimData) ? `${Number(amountPreview(claimData)).toLocaleString("ru-RU")} ₽` : "—"}</p></div>
                   </div>
-                  <div style={{ marginTop: 12 }}><span style={{ color: "#64748b", fontSize: ".72rem" }}>Требования</span><p style={{ color: "#cbd5e1", margin: "4px 0 0", fontSize: ".8rem", lineHeight: 1.5 }}>{requirements.join("; ") || "Будут сформированы из выбранной ситуации"}</p></div>
+                  <div style={{ marginTop: 12 }}><span style={{ color: "#64748b", fontSize: ".72rem" }}>Базовые требования</span><p style={{ color: "#cbd5e1", margin: "4px 0 0", fontSize: ".8rem", lineHeight: 1.5 }}>{requirements.join("; ") || "Будут сформированы индивидуально по обстоятельствам каждого заявителя"}</p></div>
                 </div>
 
                 {audit.passed && <label style={{ ...box, display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer" }}><input type="checkbox" checked={confirmed} onChange={event => setConfirmed(event.target.checked)} style={{ marginTop: 3, accentColor: "#0ea5e9" }} /><span style={{ color: "#dbeafe", fontSize: ".84rem" }}>Я проверил(а) сводку. Данные верны, документ можно формировать.</span></label>}
@@ -300,7 +351,7 @@ export default function Step7Generate({ claimData, reset, prevStep, onCollective
             </div>
             <div style={{ ...box, background: "radial-gradient(circle at 90% 0%,rgba(139,92,246,.17),transparent 38%),rgba(15,23,42,.82)" }}>
               <p style={{ color: "white", fontWeight: 800, margin: "0 0 5px" }}>PDF + настоящий DOCX</p>
-              <p style={{ color: "#94a3b8", fontSize: ".8rem", margin: "0 0 14px" }}>Файлы формируются из одной и той же проверенной версии документа.</p>
+              <p style={{ color: "#94a3b8", fontSize: ".8rem", margin: "0 0 14px" }}>PDF, DOCX и предпросмотр формируются из одной проверенной модели. В совместной претензии данные каждого участника идут отдельным блоком.</p>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                 <button disabled={!paid} onClick={downloadPDF} style={{ padding: 12, borderRadius: 11, border: "1px solid rgba(248,113,113,.3)", background: paid ? "rgba(248,113,113,.1)" : "rgba(255,255,255,.03)", color: paid ? "#fca5a5" : "#64748b", fontWeight: 800, cursor: paid ? "pointer" : "not-allowed" }}>PDF</button>
                 <button disabled={!paid} onClick={downloadDOCX} style={{ padding: 12, borderRadius: 11, border: "1px solid rgba(96,165,250,.3)", background: paid ? "rgba(96,165,250,.1)" : "rgba(255,255,255,.03)", color: paid ? "#93c5fd" : "#64748b", fontWeight: 800, cursor: paid ? "pointer" : "not-allowed" }}>DOCX</button>
