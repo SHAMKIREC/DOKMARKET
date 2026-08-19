@@ -3,7 +3,35 @@ import FileAttachment from "@/components/generator/FileAttachment";
 import DatePickerField from "@/components/generator/DatePickerField";
 
 const S = { width: "100%", padding: "12px 16px", borderRadius: 12, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "white", fontSize: "0.875rem", outline: "none" };
+const SE = { ...S, border: "1px solid #f43f5e" };
 const TA = { ...S, resize: "vertical" };
+const TAE = { ...SE, resize: "vertical" };
+
+const COURSE_EVIDENCE = [
+  { value: "Договор или публичная оферта", desc: "Оферта, договор обучения или условия оказания услуг" },
+  { value: "Чек или подтверждение оплаты", desc: "Чек, банковская выписка, платёжное поручение или кредитные документы" },
+  { value: "Рекламные материалы и обещания", desc: "Лендинг, презентация, вебинар или сообщения с обещанными условиями" },
+  { value: "Скриншоты личного кабинета курса", desc: "Программа, доступные модули, сроки и фактически предоставленные материалы" },
+  { value: "Переписка с поддержкой", desc: "Обращения о возврате, доступе, качестве или переносе обучения" },
+  { value: "Переписка с куратором", desc: "Подтверждение обещанной или отсутствующей обратной связи" },
+  { value: "Заявление на возврат", desc: "Ранее направленное требование о возврате денежных средств" },
+  { value: "Ответ онлайн-школы", desc: "Отказ, расчёт удержаний или иной ответ исполнителя" },
+  { value: "Кредитный договор или рассрочка", desc: "Документы банка или сервиса рассрочки, если обучение оплачено заёмными средствами" },
+  { value: "Другое", desc: "Иные материалы, подтверждающие условия продажи и нарушение" },
+];
+
+const DEBT_EVIDENCE = [
+  { value: "Расписка", desc: "Оригинал или копия расписки о получении денег" },
+  { value: "Договор займа", desc: "Письменный договор займа и приложения к нему" },
+  { value: "Договор или иной документ об обязательстве", desc: "Договор аренды, услуг, поставки или иной документ, из которого возник долг" },
+  { value: "Банковские переводы", desc: "Выписка или квитанции, подтверждающие передачу денег" },
+  { value: "Подтверждение частичного возврата", desc: "Переводы, расписки или иные документы о частичном погашении" },
+  { value: "Переписка с должником", desc: "Сообщения, где должник признаёт долг, сумму или срок возврата" },
+  { value: "Ранее направленное требование", desc: "Претензия, письмо или сообщение с требованием вернуть долг" },
+  { value: "Подтверждение получения требования", desc: "Почтовое уведомление, отметка вручения, электронная доставка" },
+  { value: "Свидетельские показания", desc: "Показания лиц, знающих обстоятельства передачи денег или исполнения договора" },
+  { value: "Другое", desc: "Иные материалы, подтверждающие наличие и размер обязательства" },
+];
 
 const EVIDENCE_BY_TYPE = {
   labor: [
@@ -35,18 +63,10 @@ const EVIDENCE_BY_TYPE = {
     { value: "Банковская выписка", desc: "Подтверждение оплаты товара и связанных расходов" },
     { value: "Другое", desc: "Иные материалы, подтверждающие покупку и нарушение" },
   ],
-  infoproduct: [
-    { value: "Переписка с поддержкой", desc: "Скриншоты обращений в поддержку" },
-    { value: "Скриншоты курса", desc: "Подтверждение содержимого" },
-    { value: "Ответы куратора", desc: "Переписка с куратором" },
-    { value: "Договор оферты", desc: "Публичная оферта или договор" },
-  ],
-  civil: [
-    { value: "Расписка / договор займа", desc: "Оригинал расписки или договора" },
-    { value: "Переписка с должником", desc: "Скриншоты переписки" },
-    { value: "Банковские переводы", desc: "Выписки, подтверждения платежей" },
-    { value: "Свидетельские показания", desc: "Показания очевидцев сделки" },
-  ],
+  course: COURSE_EVIDENCE,
+  infoproduct: COURSE_EVIDENCE,
+  debt: DEBT_EVIDENCE,
+  civil: DEBT_EVIDENCE,
 };
 
 const DEFAULT_EVIDENCE = [
@@ -54,6 +74,15 @@ const DEFAULT_EVIDENCE = [
   { value: "Документы", desc: "Подтверждающие документы" },
   { value: "Свидетельские показания", desc: "Показания свидетелей" },
 ];
+
+const TYPE_TIPS = {
+  labor: "Для трудового спора особенно полезны документы о фактической работе, начислениях и выплатах.",
+  product: "Для товара желательно приложить подтверждение покупки и материалы, показывающие недостаток или обращение к продавцу.",
+  course: "Для онлайн-курса сохраняйте оферту и рекламу на дату покупки: условия на сайте позднее могут измениться.",
+  infoproduct: "Для онлайн-курса сохраняйте оферту и рекламу на дату покупки: условия на сайте позднее могут измениться.",
+  debt: "Для денежного требования особенно важны документы о передаче денег и признании долга должником.",
+  civil: "Для денежного требования особенно важны документы о передаче денег и признании долга должником.",
+};
 
 const NO_EVIDENCE_VALUE = "Нет доказательств";
 const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -124,11 +153,12 @@ export default function Step6Evidence({ claimData, updateClaimData, nextStep, pr
   const [witness, setWitness] = useState(claimData.witness || { name: "", birthDate: "", text: "", date: "" });
   const [evidenceComment, setEvidenceComment] = useState(claimData.evidenceComment || "");
   const [fileError, setFileError] = useState("");
+  const [formError, setFormError] = useState("");
 
   const evidenceList = EVIDENCE_BY_TYPE[claimData.type] || DEFAULT_EVIDENCE;
   const hasWitness = selected.includes("Свидетельские показания");
   const hasNoEvidence = selected.includes(NO_EVIDENCE_VALUE);
-  const canProceed = claimData.type === "product" || selected.length > 0;
+  const canProceed = selected.length > 0;
 
   useEffect(() => {
     updateClaimData({
@@ -140,11 +170,10 @@ export default function Step6Evidence({ claimData, updateClaimData, nextStep, pr
   }, [evidenceComment, files, selected, updateClaimData, witness]);
 
   const toggle = (val) => {
+    setFormError("");
     if (val === NO_EVIDENCE_VALUE) {
-      // selecting "no evidence" clears everything else
       setSelected(s => s.includes(val) ? [] : [val]);
     } else {
-      // selecting any real evidence clears "no evidence"
       setSelected(s => {
         const withoutNo = s.filter(x => x !== NO_EVIDENCE_VALUE);
         return withoutNo.includes(val) ? withoutNo.filter(x => x !== val) : [...withoutNo, val];
@@ -181,10 +210,7 @@ export default function Step6Evidence({ claimData, updateClaimData, nextStep, pr
           ...imageData,
         };
       }));
-      setFiles(current => ({
-        ...current,
-        [item]: [...(current[item] || []), ...preparedFiles],
-      }));
+      setFiles(current => ({ ...current, [item]: [...(current[item] || []), ...preparedFiles] }));
       setFileError("");
     } catch {
       console.error("Не удалось подготовить изображение для PDF.");
@@ -205,17 +231,28 @@ export default function Step6Evidence({ claimData, updateClaimData, nextStep, pr
   }
 
   function viewFile(file) {
-    if (file.url) {
-      window.open(file.url, "_blank");
-    }
+    if (file.url) window.open(file.url, "_blank");
   }
 
   function save() {
+    if (!selected.length) {
+      setFormError("Выберите хотя бы один вид доказательства или отметьте «Нет доказательств».");
+      return;
+    }
+    if (hasWitness) {
+      const witnessName = String(witness.name || "").trim();
+      const witnessText = String(witness.text || "").trim();
+      if (witnessName.length < 5 || witnessText.length < 20) {
+        setFormError("Для свидетельских показаний укажите ФИО свидетеля и что именно он может подтвердить.");
+        return;
+      }
+    }
+    setFormError("");
     updateClaimData({
       evidence: selected,
       evidenceFiles: serializeEvidenceFileState(files),
       evidenceComment: evidenceComment.trim(),
-      witness: hasWitness ? witness : null
+      witness: hasWitness ? { ...witness, name: witness.name.trim(), text: witness.text.trim() } : null
     });
     nextStep();
   }
@@ -223,14 +260,13 @@ export default function Step6Evidence({ claimData, updateClaimData, nextStep, pr
   return (
     <div className="rounded-2xl border border-white/10" style={{ background: "rgba(255,255,255,0.03)", padding: "clamp(16px,5vw,32px)" }}>
       <h3 className="text-xl font-bold text-white mb-2">Доказательства</h3>
-      <p style={{ color: "#9ca3af", fontSize: "0.85rem", marginBottom: 6 }}>Отметьте доказательства, которые у вас есть. Файлы автоматически попадут в раздел «Приложения».</p>
-      {claimData.type === "labor" && (
-        <div style={{ marginBottom: 20, padding: "11px 13px", borderRadius: 10, background: "rgba(14,165,233,0.06)", border: "1px solid rgba(14,165,233,0.16)" }}>
-          <p style={{ color: "#cbd5e1", fontSize: "0.8rem", margin: "0 0 3px" }}>Загруженные изображения будут добавлены в конец PDF как приложения. Другие файлы будут указаны в списке приложений.</p>
-          <p style={{ color: "#64748b", fontSize: "0.74rem", margin: 0 }}>Лучше загружать JPG/PNG-скриншоты. Для онлайн-отправки итоговый PDF желательно держать до 5 МБ.</p>
-        </div>
-      )}
+      <p style={{ color: "#9ca3af", fontSize: "0.85rem", marginBottom: 6 }}>Отметьте то, что действительно есть. Выбранные материалы попадут в перечень приложений к претензии.</p>
+      <div style={{ marginBottom: 20, padding: "11px 13px", borderRadius: 10, background: "rgba(14,165,233,0.06)", border: "1px solid rgba(14,165,233,0.16)" }}>
+        <p style={{ color: "#cbd5e1", fontSize: "0.8rem", margin: "0 0 3px" }}>{TYPE_TIPS[claimData.type] || "Выбирайте только доказательства, которые сможете приложить или предъявить при необходимости."}</p>
+        <p style={{ color: "#64748b", fontSize: "0.74rem", margin: 0 }}>Изображения можно встроить в PDF; остальные файлы будут перечислены как отдельные приложения. Для отправки по электронной почте лучше держать итоговый пакет компактным.</p>
+      </div>
       {fileError && <p style={{ color: "#fbbf24", fontSize: "0.78rem", marginBottom: 16 }}>{fileError}</p>}
+      {formError && <p role="alert" style={{ color: "#fda4af", fontSize: "0.8rem", marginBottom: 16, padding: "10px 12px", borderRadius: 10, background: "rgba(244,63,94,.08)", border: "1px solid rgba(244,63,94,.25)" }}>{formError}</p>}
 
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
         {evidenceList.map(ev => {
@@ -250,13 +286,7 @@ export default function Step6Evidence({ claimData, updateClaimData, nextStep, pr
                 <div style={{ borderTop: "1px solid rgba(14,165,233,0.15)", padding: "10px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
                   <p style={{ color: "#cbd5e1", fontSize: "0.76rem", fontWeight: 600, margin: 0 }}>Добавить файлы к этому доказательству</p>
                   {evidenceFiles.map((file, fileIndex) => (
-                    <FileAttachment
-                      key={file.id || `${file.name}-${fileIndex}`}
-                      file={file}
-                      evidenceLabel={ev.value}
-                      onView={viewFile}
-                      onDelete={() => removeFile(ev.value, file.id, fileIndex)}
-                    />
+                    <FileAttachment key={file.id || `${file.name}-${fileIndex}`} file={file} evidenceLabel={ev.value} onView={viewFile} onDelete={() => removeFile(ev.value, file.id, fileIndex)} />
                   ))}
                   <label style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", background: "rgba(14,165,233,0.15)", color: "#22d3ee", border: "1px solid rgba(14,165,233,0.3)", borderRadius: 8, cursor: "pointer", fontSize: "0.8rem", fontWeight: 600, alignSelf: "flex-start" }}>
                     <i className="fa-solid fa-plus"></i> {evidenceFiles.length ? "Добавить ещё файлы" : "Выбрать файлы"}
@@ -269,39 +299,31 @@ export default function Step6Evidence({ claimData, updateClaimData, nextStep, pr
           );
         })}
 
-        {/* "No evidence" option */}
         <div style={{ borderRadius: 12, border: `1px solid ${hasNoEvidence ? "#f59e0b" : "rgba(255,255,255,0.1)"}`, background: hasNoEvidence ? "rgba(245,158,11,0.07)" : "transparent" }}>
           <label onClick={() => toggle(NO_EVIDENCE_VALUE)} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 16px", cursor: "pointer" }}>
             <input type="checkbox" checked={hasNoEvidence} onChange={() => {}} style={{ marginTop: 2, width: 18, height: 18, accentColor: "#f59e0b", flexShrink: 0 }} />
             <div style={{ flex: 1 }}>
               <span style={{ display: "block", fontWeight: 500, color: hasNoEvidence ? "#fbbf24" : "white", fontSize: "0.9rem" }}>Нет доказательств</span>
-              <span style={{ fontSize: "0.78rem", color: "#9ca3af" }}>Претензия будет составлена на основе ваших данных без вложений</span>
+              <span style={{ fontSize: "0.78rem", color: "#9ca3af" }}>Выберите это осознанно, если сейчас действительно нечего приложить. Документ всё равно можно подготовить.</span>
             </div>
           </label>
         </div>
       </div>
 
       {!selected.length && (
-        <p style={{ color: "#f59e0b", fontSize: "0.8rem", marginBottom: 14 }}>
-          <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: 6 }}></i>
-          {claimData.type === "product"
-            ? "Доказательства не выбраны. Рекомендуем приложить хотя бы чек, фото недостатка или переписку с продавцом."
-            : "Выберите хотя бы один пункт или отметьте «Нет доказательств»"}
-        </p>
+        <p style={{ color: "#f59e0b", fontSize: "0.8rem", marginBottom: 14 }}><i className="fa-solid fa-triangle-exclamation" style={{ marginRight: 6 }}></i>Выберите хотя бы один пункт или отметьте «Нет доказательств».</p>
       )}
 
       {hasWitness && (
         <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 12, padding: 16, marginBottom: 20 }}>
-          <h4 style={{ fontWeight: 600, color: "white", marginBottom: 14 }}>Данные свидетеля</h4>
+          <h4 style={{ fontWeight: 600, color: "white", marginBottom: 6 }}>Данные свидетеля</h4>
+          <p style={{ color: "#94a3b8", fontSize: ".76rem", margin: "0 0 14px" }}>Укажите человека только если он действительно может подтвердить конкретные обстоятельства.</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <input style={S} value={witness.name} onChange={e => setWitness(w => ({ ...w, name: e.target.value }))} placeholder="ФИО свидетеля" />
+            <input style={formError && String(witness.name || "").trim().length < 5 ? SE : S} value={witness.name} onChange={e => { setWitness(w => ({ ...w, name: e.target.value })); setFormError(""); }} placeholder="ФИО свидетеля" />
             <DatePickerField value={witness.birthDate} onChange={value => setWitness(w => ({ ...w, birthDate: value }))} />
-            <textarea style={TA} rows={3} value={witness.text} onChange={e => setWitness(w => ({ ...w, text: e.target.value }))} placeholder="Текст подтверждения свидетеля..." maxLength={1000} />
+            <textarea style={formError && String(witness.text || "").trim().length < 20 ? TAE : TA} rows={3} value={witness.text} onChange={e => { setWitness(w => ({ ...w, text: e.target.value })); setFormError(""); }} placeholder="Что именно свидетель видел или знает по существу спора" maxLength={1000} />
             <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, padding: "10px 14px" }}>
-              <p style={{ color: "#9ca3af", fontSize: "0.78rem" }}>
-                <i className="fa-solid fa-pen-line" style={{ marginRight: 6, color: "#0ea5e9" }}></i>
-                В PDF будет предусмотрено место для подписи свидетеля
-              </p>
+              <p style={{ color: "#9ca3af", fontSize: "0.78rem", margin: 0 }}><i className="fa-solid fa-pen-line" style={{ marginRight: 6, color: "#0ea5e9" }}></i>В PDF будет предусмотрено место для подписи свидетеля.</p>
             </div>
           </div>
         </div>
@@ -309,7 +331,7 @@ export default function Step6Evidence({ claimData, updateClaimData, nextStep, pr
 
       <div style={{ marginBottom: 20 }}>
         <label style={{ display: "block", color: "#d1d5db", fontSize: ".82rem", fontWeight: 500, marginBottom: 6 }}>Комментарий к доказательствам <span style={{ color: "#6b7280", fontWeight: 400 }}>(необязательно)</span></label>
-        <textarea style={TA} rows={3} value={evidenceComment} onChange={e => setEvidenceComment(e.target.value)} placeholder="Укажите, что подтверждают материалы, или перечислите иные доказательства" maxLength={1500} />
+        <textarea style={TA} rows={3} value={evidenceComment} onChange={e => setEvidenceComment(e.target.value)} placeholder="Например: переписка подтверждает признание долга; на фото виден недостаток товара" maxLength={1500} />
       </div>
 
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
