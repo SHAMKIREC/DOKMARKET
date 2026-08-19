@@ -107,80 +107,58 @@ export default function Step1Category({ claimData, updateClaimData, nextStep }) 
   }
 
   return (
-    <div className="rounded-2xl p-5 sm:p-6 border border-white/10" style={{ background: "rgba(255,255,255,.03)" }}>
+    <div className="rounded-2xl border border-white/10" style={{ padding: "clamp(17px,4vw,25px)", background: "linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.018))" }}>
       <style>{`
-        .category-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-        .category-card { min-height: 122px; }
-        .subtype-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
-        .back-to-categories {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 8px 12px;
-          margin: 0 0 20px;
-          border: 1px solid rgba(125,92,255,.35);
-          border-radius: 999px;
-          background: rgba(255,255,255,.04);
-          color: #dbeafe;
-          cursor: pointer;
-          font-size: .84rem;
-          font-weight: 600;
-          line-height: 1;
-          transition: background .2s, border-color .2s, color .2s, transform .2s;
-        }
-        .back-to-categories:hover {
-          background: rgba(125,92,255,.14);
-          border-color: rgba(125,92,255,.65);
-          color: #f5f3ff;
-          transform: translateY(-1px);
-        }
-        .subtype-option { min-height: 58px; }
-        @media (max-width: 640px) {
-          .category-grid, .subtype-grid { grid-template-columns: 1fr; }
-          .category-card { min-height: 0; }
-        }
+        .category-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+        .category-card { min-height:136px; position:relative; overflow:hidden; }
+        .category-card:after { content:""; position:absolute; width:110px; height:110px; right:-55px; top:-55px; border-radius:50%; background:rgba(255,255,255,.035); transition:transform .2s ease; }
+        .category-card:hover { transform:translateY(-2px); border-color:rgba(129,140,248,.35)!important; background:rgba(255,255,255,.045)!important; }
+        .category-card:hover:after { transform:scale(1.2); }
+        .subtype-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+        .subtype-option { min-height:62px; transition:transform .18s ease,border-color .18s ease,background .18s ease; }
+        .subtype-option:hover { transform:translateY(-1px); border-color:rgba(129,140,248,.42)!important; background:rgba(99,102,241,.09)!important; }
+        .back-to-categories { display:inline-flex; align-items:center; gap:8px; padding:8px 12px; margin:0 0 19px; border:1px solid rgba(125,92,255,.35); border-radius:999px; background:rgba(255,255,255,.04); color:#dbeafe; cursor:pointer; font-size:.8rem; font-weight:700; line-height:1; }
+        @media (max-width:700px){ .category-grid,.subtype-grid{grid-template-columns:1fr}.category-card{min-height:0} }
       `}</style>
 
       {!selectedCategory ? (
         <>
-          <h2 style={{ fontWeight: 750, color: "white", fontSize: "clamp(1.2rem,3vw,1.45rem)", margin: "0 0 7px" }}>Выберите категорию спора</h2>
-          <p style={{ color: "#9ca3af", fontSize: ".86rem", lineHeight: 1.55, margin: "0 0 22px" }}>От выбранной ситуации зависят вопросы, статьи закона и текст будущей претензии.</p>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, flexWrap:"wrap", marginBottom:8 }}>
+            <div style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"6px 9px", borderRadius:999, color:"#a5f3fc", background:"rgba(8,145,178,.09)", border:"1px solid rgba(103,232,249,.16)", fontSize:".7rem", fontWeight:800 }}><i className="fa-solid fa-scale-balanced" /> ШАГ 1 ИЗ 7</div>
+            <div style={{ color:"#64748b", fontSize:".72rem", fontWeight:700 }}>4 направления · 36 ситуаций</div>
+          </div>
+          <h2 style={{ fontWeight:800, color:"white", fontSize:"clamp(1.25rem,4vw,1.6rem)", margin:"0 0 7px" }}>Что случилось?</h2>
+          <p style={{ color:"#94a3b8", fontSize:".85rem", lineHeight:1.6, margin:"0 0 21px" }}>Сначала выберите направление. На следующем экране уточним конкретную ситуацию — от неё зависят вопросы, нормы права и текст претензии.</p>
           <div className="category-grid">
             {CATEGORIES.map(category => (
-              <button
-                key={category.id}
-                type="button"
-                className="category-card"
-                onClick={() => selectCategory(category)}
-                style={{ width: "100%", background: "rgba(255,255,255,.025)", border: "1.5px solid rgba(255,255,255,.1)", borderRadius: 15, padding: "18px", cursor: "pointer", textAlign: "left", display: "flex", alignItems: "flex-start", gap: 15, color: "white", transition: "border-color .2s, background .2s, transform .2s" }}
-              >
-                <span style={{ width: 48, height: 48, borderRadius: 13, background: category.background, border: `1px solid ${category.border}`, display: "flex", alignItems: "center", justifyContent: "center", color: category.color, flexShrink: 0, fontSize: "1.05rem" }}><i className={`fa-solid ${category.icon}`} /></span>
-                <span><strong style={{ display: "block", fontSize: ".98rem", lineHeight: 1.3, marginBottom: 6 }}>{category.title}</strong><span style={{ display: "block", color: "#9ca3af", fontSize: ".78rem", lineHeight: 1.5 }}>{category.description}</span></span>
+              <button key={category.id} type="button" className="category-card" onClick={() => selectCategory(category)} style={{ width:"100%", background:"rgba(255,255,255,.025)", border:"1.5px solid rgba(255,255,255,.1)", borderRadius:17, padding:"18px", cursor:"pointer", textAlign:"left", display:"flex", alignItems:"flex-start", gap:15, color:"white", transition:"all .2s ease" }}>
+                <span style={{ width:49, height:49, borderRadius:14, background:category.background, border:`1px solid ${category.border}`, display:"flex", alignItems:"center", justifyContent:"center", color:category.color, flexShrink:0, fontSize:"1.05rem" }}><i className={`fa-solid ${category.icon}`} /></span>
+                <span style={{ position:"relative", zIndex:1, minWidth:0 }}>
+                  <strong style={{ display:"block", fontSize:"1rem", lineHeight:1.3, marginBottom:6 }}>{category.title}</strong>
+                  <span style={{ display:"block", color:"#9ca3af", fontSize:".77rem", lineHeight:1.5 }}>{category.description}</span>
+                  <span style={{ display:"inline-flex", marginTop:11, color:category.color, fontSize:".68rem", fontWeight:800 }}>{category.subtypes.length} сценариев →</span>
+                </span>
               </button>
             ))}
           </div>
+          <div style={{ marginTop:16, padding:"11px 13px", borderRadius:12, background:"rgba(255,255,255,.025)", border:"1px solid rgba(255,255,255,.07)", color:"#64748b", fontSize:".72rem", lineHeight:1.55 }}><i className="fa-solid fa-shield-halved" style={{ color:"#67e8f9", marginRight:7 }} />Если ситуация сложнее предложенных вариантов, выберите «Другая ситуация» в нужном направлении — генератор попросит описать факты подробнее.</div>
         </>
       ) : (
         <>
-          <button type="button" onClick={returnToCategories} className="back-to-categories"><i className="fa-solid fa-arrow-left" />Назад к категориям</button>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-            <span style={{ width: 44, height: 44, borderRadius: 11, background: selectedCategory.background, border: `1px solid ${selectedCategory.border}`, display: "flex", alignItems: "center", justifyContent: "center", color: selectedCategory.color, flexShrink: 0 }}><i className={`fa-solid ${selectedCategory.icon}`} /></span>
-            <h2 style={{ color: "white", fontSize: "clamp(1.15rem,3vw,1.35rem)", fontWeight: 750, margin: 0 }}>{selectedCategory.title}</h2>
+          <button type="button" onClick={returnToCategories} className="back-to-categories"><i className="fa-solid fa-arrow-left" />Все направления</button>
+          <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:8 }}>
+            <span style={{ width:45, height:45, borderRadius:12, background:selectedCategory.background, border:`1px solid ${selectedCategory.border}`, display:"flex", alignItems:"center", justifyContent:"center", color:selectedCategory.color, flexShrink:0 }}><i className={`fa-solid ${selectedCategory.icon}`} /></span>
+            <div><h2 style={{ color:"white", fontSize:"clamp(1.15rem,3vw,1.35rem)", fontWeight:800, margin:0 }}>{selectedCategory.title}</h2><span style={{ color:"#64748b", fontSize:".72rem" }}>{selectedCategory.subtypes.length} вариантов ситуации</span></div>
           </div>
-          <p style={{ color: "#9ca3af", fontSize: ".88rem", margin: "0 0 19px 56px" }}>Что произошло?</p>
+          <p style={{ color:"#9ca3af", fontSize:".85rem", margin:"13px 0 17px" }}>Выберите наиболее близкий вариант. После выбора сразу перейдём к формату претензии.</p>
           <div className="subtype-grid">
             {selectedCategory.subtypes.map(([subtypeId, subtypeLabel]) => {
               const isActive = claimData.subtype === subtypeId;
               return (
-                <button
-                  key={subtypeId}
-                  type="button"
-                  className="subtype-option"
-                  onClick={() => selectSubtype(subtypeId, subtypeLabel)}
-                  style={{ width: "100%", padding: "13px 15px", borderRadius: 11, background: isActive ? "rgba(99,102,241,.16)" : "rgba(255,255,255,.025)", border: `1px solid ${isActive ? "rgba(129,140,248,.55)" : "rgba(255,255,255,.1)"}`, color: "white", cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 11, fontSize: ".84rem", lineHeight: 1.4, whiteSpace: "normal", overflowWrap: "anywhere" }}
-                >
-                  <span style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${isActive ? "#818cf8" : "#4b5563"}`, background: isActive ? "#818cf8" : "transparent", boxShadow: isActive ? "inset 0 0 0 4px #191a2e" : "none", flexShrink: 0 }} />
-                  {subtypeLabel}
+                <button key={subtypeId} type="button" className="subtype-option" onClick={() => selectSubtype(subtypeId, subtypeLabel)} style={{ width:"100%", padding:"13px 14px", borderRadius:12, background:isActive ? "rgba(99,102,241,.16)" : "rgba(255,255,255,.025)", border:`1px solid ${isActive ? "rgba(129,140,248,.55)" : "rgba(255,255,255,.1)"}`, color:"white", cursor:"pointer", textAlign:"left", display:"flex", alignItems:"center", gap:11, fontSize:".81rem", lineHeight:1.4, whiteSpace:"normal", overflowWrap:"anywhere" }}>
+                  <span style={{ width:19, height:19, borderRadius:"50%", border:`2px solid ${isActive ? "#818cf8" : "#4b5563"}`, background:isActive ? "#818cf8" : "transparent", boxShadow:isActive ? "inset 0 0 0 4px #191a2e" : "none", flexShrink:0 }} />
+                  <span>{subtypeLabel}</span>
+                  <i className="fa-solid fa-chevron-right" style={{ marginLeft:"auto", color:"#475569", fontSize:".65rem" }} />
                 </button>
               );
             })}
