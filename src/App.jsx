@@ -26,9 +26,7 @@ import TemplateStudioGuard from './template-studio/components/TemplateStudioGuar
 import SpecialistMaterials from './pages/SpecialistMaterials';
 import SpecialistMaterialNew from './pages/SpecialistMaterialNew';
 
-const { Pages, Layout, mainPage } = pagesConfig;
-const mainPageKey = mainPage ?? Object.keys(Pages)[0];
-const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
+const { Pages, Layout } = pagesConfig;
 const protectedPages = new Set(['Dashboard', 'MyDocuments', 'Profile']);
 
 const LayoutWrapper = ({ children, currentPageName }) => Layout ?
@@ -39,8 +37,8 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route path="/" element={
-        <LayoutWrapper currentPageName={mainPageKey}>
-          <MainPage />
+        <LayoutWrapper currentPageName="Market">
+          <Market />
         </LayoutWrapper>
       } />
       {Object.entries(Pages).filter(([path]) => !protectedPages.has(path)).map(([path, Page]) => (
@@ -89,9 +87,7 @@ const AuthenticatedApp = () => {
   );
 };
 
-
 function App() {
-
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
