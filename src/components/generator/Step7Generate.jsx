@@ -76,8 +76,8 @@ function auditCourse(circ, selected, errors, warnings) {
   if (circ.refundRequestDate && circ.purchaseDate && parseDate(circ.refundRequestDate) < parseDate(circ.purchaseDate)) {
     errors.push("Шаг 5 — дата требования о возврате не может быть раньше даты оплаты курса");
   }
-  if (selected.has("withdraw_from_service") && selected.has("poor_quality_service")) {
-    warnings.push("Одновременно выбраны отказ от услуги и недостатки услуги. В документе основания будут разделены, чтобы не смешивать разные правовые конструкции.");
+  if (selected.has("voluntary_withdrawal") && selected.has("poor_quality_service")) {
+    warnings.push("Одновременно выбраны отказ от дальнейшего обучения и недостатки услуги. В документе эти основания будут изложены раздельно.");
   }
 }
 
@@ -100,10 +100,10 @@ function auditDebt(circ, selected, errors, warnings) {
     warnings.push("Проверьте расчёт: возвращённая сумма + остаток не совпадают с исходной суммой долга.");
   }
 
-  if (!circ.repaymentDate && !selected.has("repayment_on_demand") && !circ.demandDate) {
-    warnings.push("Срок возврата не указан. Для займа без срока обычно важно зафиксировать дату требования о возврате.");
+  if (!circ.repaymentDate && !selected.has("no_due_date") && !circ.demandDate) {
+    warnings.push("Срок возврата не указан. Для займа без срока важно зафиксировать дату требования о возврате.");
   }
-  if (selected.has("repayment_on_demand") && !circ.demandDate) {
+  if (selected.has("no_due_date") && !circ.demandDate) {
     errors.push("Шаг 5 — для займа без установленного срока укажите дату предъявления требования о возврате");
   }
   if (circ.demandDate && isFutureDate(circ.demandDate)) errors.push("Шаг 5 — дата требования о возврате не может быть в будущем");
