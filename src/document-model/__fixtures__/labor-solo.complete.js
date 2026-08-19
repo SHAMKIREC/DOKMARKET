@@ -1,0 +1,78 @@
+export const laborSoloCompleteClaimData = {
+  type: "labor",
+  subtype: "salary-debt",
+  subtypeLabel: "Задолженность по заработной плате",
+  mode: "individual",
+  workers: [{
+    id: 0,
+    name: "петрова анна сергеевна",
+    gender: "female",
+    birthDate: "1991-04-12",
+    address: "410000, г. Саратов, ул. Московская, д. 20, кв. 7",
+    phone: "8 (927) 111-22-33",
+    email: "ANNA.PETROVA@EXAMPLE.RU",
+    position: "Специалист по работе с клиентами",
+  }],
+  employer: {
+    name: "ООО «Пример»",
+    address: "410012, г. Саратов, проспект Столыпина, д. 5",
+    inn: "6450999999",
+    ogrn: "1186450000001",
+    type: "legal-entity",
+    source: "manual",
+  },
+  respondent: {
+    name: "ООО «Пример»",
+    address: "410012, г. Саратов, проспект Столыпина, д. 5",
+  },
+  circumstances: {
+    workStart: "2024-02-01",
+    workEnd: "2026-06-30",
+    stillWorking: false,
+    workplace: "г. Саратов, проспект Столыпина, д. 5",
+    supervisor: "Сидоров Сергей Петрович",
+    debtAmount: "180000",
+    partialPaymentAmount: "30000",
+    outstandingDebtAmount: "150000",
+    lastPartialPaymentDate: "2026-06-15",
+    partialPayments: "Частичная выплата на банковскую карту.",
+    dueDate: "2026-06-10",
+    delayDays: "37",
+    paymentForm: ["банковский перевод", "наличные"],
+    description: "Работодатель не выплатил заработную плату за май и июнь 2026 года.",
+    socialImpact: "На иждивении находится несовершеннолетний ребёнок.",
+    userComment: "Устные обращения к руководителю результата не дали.",
+  },
+  selectedLegalOptions: ["salary_debt"],
+  evidence: ["Трудовой договор", "Расчётные листки", "Банковская выписка"],
+  evidenceFiles: {
+    "Трудовой договор": [{
+      id: "contract-1",
+      name: "trudovoy-dogovor.pdf",
+      type: "application/pdf",
+      size: 245760,
+    }],
+    "Расчётные листки": [{
+      id: "payroll-1",
+      name: "raschetnyy-listok-may.png",
+      type: "image/png",
+      size: 128000,
+    }],
+    "Банковская выписка": [{
+      id: "bank-1",
+      name: "bankovskaya-vypiska.pdf",
+      type: "application/pdf",
+      size: 512000,
+    }],
+  },
+  evidenceComment: "Документы подтверждают трудовые отношения, начисление зарплаты и отсутствие полной выплаты.",
+  witness: {
+    name: "Смирнов Алексей Олегович",
+    birthDate: "1988-03-10",
+    text: "Подтверждает выполнение трудовых обязанностей.",
+    date: "2026-07-01",
+  },
+};
+
+export default laborSoloCompleteClaimData;
+
