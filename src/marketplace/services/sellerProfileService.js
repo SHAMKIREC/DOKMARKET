@@ -43,6 +43,43 @@ export async function listOwnCatalogItems(userId) {
   return Array.isArray(rows) ? rows : [];
 }
 
+export async function createSellerServiceDraft(userId, service = {}) {
+  if (!userId) throw new Error("AUTH_REQUIRED");
+  const title = String(service.title || "").trim();
+  const description = String(service.description || "").trim();
+  const price = Math.max(0, Number(service.price || 0));
+  if (title.length < 5 || description.length < 15 || price <= 0) throw new Error("INVALID_SERVICE");
+  const slug = `service-${String(userId).slice(0,8)}-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
+  const rows = await restRequest("catalog_items", {
+    method: "POST",
+    body: {
+      slug,
+      item_type: "service",
+      title,
+      short_description: description,
+      description,
+      category: service.directionSlug || "other",
+      provider_type: "specialist",
+      provider_id: userId,
+      price_rub: price,
+      price_type: "from",
+      formats: [],
+      tags: [],
+      status: "draft",
+      featured: false,
+      metadata: {
+        material_type: "service",
+        delivery_time: String(service.deliveryTime || "").trim(),
+        what_included: String(service.whatIncluded || "").trim(),
+        requirements: String(service.requirements || "").trim(),
+        customer_confirmation_required: true,
+      },
+    },
+    prefer: "return=representation",
+  });
+  return Array.isArray(rows) ? rows[0] || null : null;
+}
+
 export async function submitCatalogItemForReview(itemId, userId) {
   if (!itemId || !userId) throw new Error("REQUIRED_FIELDS");
   const rows = await restRequest(`catalog_items?id=eq.${encodeURIComponent(itemId)}&provider_id=eq.${encodeURIComponent(userId)}`, { method: "PATCH", body: { status: "pending_review" }, prefer: "return=representation" });
