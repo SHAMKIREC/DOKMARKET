@@ -14,6 +14,7 @@ import Register from './pages/Register';
 import RegisterLawyer from './pages/RegisterLawyer';
 import Forbidden from './pages/Forbidden';
 import Market from './pages/Market';
+import PlatformHome from './pages/PlatformHome';
 import MarketOffer from './pages/MarketOffer';
 import MarketSpecialist from './pages/MarketSpecialist';
 import MarketFavorites from './pages/MarketFavorites';
@@ -37,11 +38,8 @@ const DosudebkaHome = Pages.Home;
 
 const AuthenticatedApp = () => (
   <Routes>
-    {/* DocMarket is the platform home. Keep /market as a backwards-compatible catalog URL. */}
-    <Route path="/" element={<LayoutWrapper currentPageName="Market"><Market /></LayoutWrapper>} />
+    <Route path="/" element={<LayoutWrapper currentPageName="Market"><PlatformHome /></LayoutWrapper>} />
     <Route path="/market" element={<LayoutWrapper currentPageName="Market"><Market /></LayoutWrapper>} />
-
-    {/* Dosudebka is the first automated service inside DocMarket. */}
     <Route path="/dosudebka" element={<LayoutWrapper currentPageName="Dosudebka"><DosudebkaHome /></LayoutWrapper>} />
 
     {Object.entries(Pages).filter(([path]) => !protectedPages.has(path) && path !== 'Home').map(([path, Page]) => (
