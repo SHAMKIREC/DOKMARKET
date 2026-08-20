@@ -11,7 +11,8 @@
     "lint:copy": "node scripts/lint-copy.mjs",
     "lint:copy:strict": "node scripts/lint-copy.mjs --strict",
     "typecheck": "tsc -p ./jsconfig.json",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "agents": "node scripts/agent-loop.mjs"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^17.0.0",
