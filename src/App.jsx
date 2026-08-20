@@ -16,6 +16,7 @@ import RegisterLawyer from './pages/RegisterLawyer';
 import Forbidden from './pages/Forbidden';
 import Market from './pages/Market';
 import PlatformHome from './pages/PlatformHome';
+import PlatformReviews from './pages/PlatformReviews';
 import MarketOffer from './pages/MarketOffer';
 import MarketSpecialist from './pages/MarketSpecialist';
 import MarketFavorites from './pages/MarketFavorites';
@@ -42,6 +43,7 @@ const AuthenticatedApp = () => (
   <Routes>
     <Route path="/" element={<LayoutWrapper currentPageName="Market"><PlatformHome /></LayoutWrapper>} />
     <Route path="/market" element={<LayoutWrapper currentPageName="Market"><Market /></LayoutWrapper>} />
+    <Route path="/reviews" element={<LayoutWrapper currentPageName="Reviews"><PlatformReviews /></LayoutWrapper>} />
     <Route path="/dosudebka" element={<LayoutWrapper currentPageName="Dosudebka"><DosudebkaHome /></LayoutWrapper>} />
 
     {Object.entries(Pages).filter(([path]) => !protectedPages.has(path) && path !== 'Home').map(([path, Page]) => (
