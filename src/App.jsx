@@ -22,6 +22,8 @@ import MarketOfferDemo from './pages/MarketOfferDemo';
 import MarketSpecialist from './pages/MarketSpecialist';
 import MarketFavorites from './pages/MarketFavorites';
 import MarketCart from './pages/MarketCart';
+import MyServiceOrders from './pages/MyServiceOrders';
+import SpecialistOrders from './pages/SpecialistOrders';
 import TemplateStudio from './pages/TemplateStudio';
 import TemplateStudioNew from './pages/TemplateStudioNew';
 import TemplateStudioEditor from './pages/TemplateStudioEditor';
@@ -67,6 +69,8 @@ const AuthenticatedApp = () => (
     <Route path="/market/specialist/:specialistId" element={<LayoutWrapper currentPageName="Market"><MarketSpecialist /></LayoutWrapper>} />
     <Route path="/market/favorites" element={<LayoutWrapper currentPageName="Market"><MarketFavorites /></LayoutWrapper>} />
     <Route path="/market/cart" element={<LayoutWrapper currentPageName="Market"><MarketCart /></LayoutWrapper>} />
+    <Route path="/market/my-service-orders" element={<ProtectedRoute allowedRoles={['user','lawyer']}><LayoutWrapper currentPageName="Market"><MyServiceOrders /></LayoutWrapper></ProtectedRoute>} />
+    <Route path="/specialist/orders" element={<ProtectedRoute allowedRoles={['lawyer']}><LayoutWrapper currentPageName="SpecialistOrders"><SpecialistOrders /></LayoutWrapper></ProtectedRoute>} />
     <Route path="/market/:direction" element={<LayoutWrapper currentPageName="Market"><Market /></LayoutWrapper>} />
     <Route path="/market/:direction/:section" element={<LayoutWrapper currentPageName="Market"><Market /></LayoutWrapper>} />
     <Route path="/market/:direction/:section/:category" element={<LayoutWrapper currentPageName="Market"><Market /></LayoutWrapper>} />
