@@ -1,7 +1,7 @@
 export const platformServices = [
   {
     id: "dosudebka",
-    offerId: "dosudebka-service",
+    offerId: "dosudebka-official",
     status: "active",
     statusLabel: "Работает",
     icon: "fa-scale-balanced",
