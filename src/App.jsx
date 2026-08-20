@@ -29,6 +29,7 @@ import TemplateStudioFill from './pages/TemplateStudioFill';
 import TemplateStudioGuard from './template-studio/components/TemplateStudioGuard';
 import SpecialistMaterials from './pages/SpecialistMaterials';
 import SpecialistMaterialNew from './pages/SpecialistMaterialNew';
+import DocMarketAssistant from './marketplace/components/DocMarketAssistant';
 import './styles/unified-docmarket-theme.css';
 import './styles/app-shell-overrides.css';
 
@@ -85,7 +86,7 @@ function App() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
-        <Router><ScrollToHash /><AuthenticatedApp /></Router>
+        <Router><ScrollToHash /><AuthenticatedApp /><DocMarketAssistant /></Router>
         <Toaster />
       </QueryClientProvider>
     </AuthProvider>
