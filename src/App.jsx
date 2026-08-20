@@ -6,6 +6,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider } from '@/lib/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import ScrollToHash from '@/components/ScrollToHash';
 import JoinRoom from './pages/JoinRoom';
 import ForLawyers from './pages/ForLawyers';
 import BusinessCabinet from './pages/BusinessCabinet';
@@ -79,7 +80,7 @@ function App() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
-        <Router><AuthenticatedApp /></Router>
+        <Router><ScrollToHash /><AuthenticatedApp /></Router>
         <Toaster />
       </QueryClientProvider>
     </AuthProvider>
