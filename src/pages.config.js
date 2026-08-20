@@ -6,7 +6,7 @@ import Generator from './pages/Generator';
 import Guide from './pages/Guide';
 import Home from './pages/Home';
 import Pricing from './pages/Pricing';
-import Dashboard from './pages/Dashboard';
+import Dashboard from './pages/PlatformDashboard';
 import MyDocuments from './pages/MyDocuments';
 import Profile from './pages/Profile';
 import __Layout from './Layout.jsx';
