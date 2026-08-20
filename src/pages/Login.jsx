@@ -3,9 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { validateEmail } from "@/utils/authValidation";
 
-export const field = { width: "100%", padding: "12px 14px", borderRadius: 11, border: "1px solid rgba(148,163,184,.22)", background: "rgba(15,23,42,.75)", color: "white", outline: "none" };
+export const field = { width: "100%", padding: "13px 14px", borderRadius: 12, border: "1px solid rgba(148,163,184,.22)", background: "rgba(15,23,42,.75)", color: "white", outline: "none" };
 export const fieldStyle = error => ({ ...field, borderColor: error ? "rgba(251,113,133,.8)" : field.border, boxShadow: error ? "0 0 0 1px rgba(251,113,133,.12)" : "none" });
-export const button = { width: "100%", padding: "12px", border: 0, borderRadius: 11, color: "white", fontWeight: 700, background: "linear-gradient(135deg,#0891b2,#7c3aed)", cursor: "pointer" };
+export const button = { width: "100%", minHeight: 48, padding: "12px", border: 0, borderRadius: 12, color: "white", fontWeight: 800, background: "linear-gradient(135deg,#0891b2,#7c3aed)", cursor: "pointer" };
 
 export default function Login() {
   const { login, loginAsDemo } = useAuth();
@@ -28,29 +28,26 @@ export default function Login() {
     catch { setErrors(current => ({ ...current, form: "Неверный email или пароль." })); }
     finally { setBusy(false); }
   }
-  async function demo(role) {
-    setErrors({});
-    try { enter(await loginAsDemo(role)); } catch { setErrors({ form: "Демо-вход недоступен." }); }
-  }
+  async function demo(role) { setErrors({}); try { enter(await loginAsDemo(role)); } catch { setErrors({ form: "Демо-вход недоступен." }); } }
 
-  return <AuthShell title="Вход в Досудебку" subtitle="Войдите, чтобы сохранить документы и продолжить работу с претензиями.">
+  return <AuthShell title="Вход в ДокМаркет" subtitle="Один аккаунт для документов, умных сервисов, покупок и работы со специалистами.">
     <form onSubmit={submit} noValidate style={{ display: "grid", gap: 14 }}>
       <Label text="Email"><input style={fieldStyle(errors.email)} type="email" autoComplete="email" placeholder="Введите email" value={form.email} onChange={event => setValue("email", event.target.value)} aria-invalid={Boolean(errors.email)} />{errors.email && <ErrorText>{errors.email}</ErrorText>}</Label>
       <Label text="Пароль"><span style={{ position: "relative", display: "block" }}><input style={{ ...fieldStyle(errors.password), paddingRight: 48 }} type={showPassword ? "text" : "password"} autoComplete="current-password" placeholder="Введите пароль" value={form.password} onChange={event => setValue("password", event.target.value)} aria-invalid={Boolean(errors.password)} /><button type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"} title={showPassword ? "Скрыть пароль" : "Показать пароль"} style={passwordToggle}><i className={`fa-regular ${showPassword ? "fa-eye-slash" : "fa-eye"}`} /></button></span>{errors.password && <ErrorText>{errors.password}</ErrorText>}</Label>
       <button type="button" onClick={() => setRecoveryNotice(true)} style={recoveryButton}>Забыли пароль?</button>
-      {recoveryNotice && <p role="status" style={{ color: "#94a3b8", margin: 0, fontSize: ".8rem", lineHeight: 1.45 }}>Восстановление пароля подключим следующим этапом через Supabase Auth.</p>}
+      {recoveryNotice && <p role="status" style={{ color: "#94a3b8", margin: 0, fontSize: ".8rem", lineHeight: 1.45 }}>Восстановление пароля будет доступно через единый аккаунт ДокМаркета.</p>}
       {errors.form && <ErrorText>{errors.form}</ErrorText>}
-      <button style={{ ...button, opacity: busy ? .7 : 1 }} disabled={busy}>{busy ? "Входим…" : "Войти"}</button>
+      <button style={{ ...button, opacity: busy ? .7 : 1 }} disabled={busy}>{busy ? "Входим…" : "Войти в ДокМаркет"}</button>
     </form>
-    <div style={{ display: "grid", gap: 8, marginTop: 18, fontSize: ".82rem" }}><Link to="/Register" style={{ color: "#67e8f9" }}>Нет аккаунта? Создать аккаунт</Link><Link to="/RegisterLawyer" style={{ color: "#c4b5fd" }}>Юрист или юридическая компания? Регистрация для Business</Link></div>
-    {import.meta.env.DEV && <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,.08)" }}><p style={{ color: "#64748b", fontSize: ".7rem", margin: "0 0 8px" }}>Режим разработки</p><div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}><button type="button" onClick={() => demo("user")} style={demoButton}>Войти как физлицо</button><button type="button" onClick={() => demo("lawyer")} style={demoButton}>Войти как юрист</button></div></div>}
+    <div style={{ display: "grid", gap: 9, marginTop: 18, fontSize: ".84rem" }}><Link to="/Register" style={{ color: "#67e8f9" }}>Нет аккаунта? Зарегистрироваться</Link><Link to="/RegisterLawyer" style={{ color: "#c4b5fd" }}>Юрист, автор или компания? Подключиться к ДокМаркету</Link></div>
+    {import.meta.env.DEV && <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,.08)" }}><p style={{ color: "#64748b", fontSize: ".7rem", margin: "0 0 8px" }}>Режим разработки</p><div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}><button type="button" onClick={() => demo("user")} style={demoButton}>Войти как покупатель</button><button type="button" onClick={() => demo("lawyer")} style={demoButton}>Войти как автор</button></div></div>}
   </AuthShell>;
 }
 
-export function AuthShell({ title, subtitle, children }) { return <div className="min-h-screen pt-24 pb-12 px-4 flex justify-center"><div style={{ width: "100%", maxWidth: 440, height: "fit-content", padding: "clamp(24px,5vw,36px)", borderRadius: 22, background: "rgba(15,23,42,.78)", border: "1px solid rgba(103,232,249,.15)", boxShadow: "0 20px 80px rgba(34,211,238,.08),0 20px 80px rgba(139,92,246,.08)", backdropFilter: "blur(18px)" }}><h1 style={{ color: "white", fontSize: "1.7rem", margin: "0 0 6px", fontWeight: 800 }}>{title}</h1><p style={{ color: "#94a3b8", margin: "0 0 24px", fontSize: ".88rem" }}>{subtitle}</p>{children}</div></div>; }
-export function Label({ text, children }) { return <label style={{ color: "#cbd5e1", fontSize: ".8rem", display: "grid", gap: 6 }}>{text}{children}</label>; }
-export function ErrorText({ children }) { return <span role="alert" style={{ color: "#fb7185", fontSize: ".73rem", lineHeight: 1.35 }}>{children}</span>; }
+export function AuthShell({ title, subtitle, children }) { return <div className="min-h-screen pt-24 pb-12 px-4 flex justify-center"><div style={{ width: "100%", maxWidth: 460, height: "fit-content", padding: "clamp(24px,5vw,38px)", borderRadius: 24, background: "rgba(15,23,42,.78)", border: "1px solid rgba(103,232,249,.15)", boxShadow: "0 20px 80px rgba(34,211,238,.08),0 20px 80px rgba(139,92,246,.08)", backdropFilter: "blur(18px)" }}><Link to="/" style={{display:"inline-flex",alignItems:"center",gap:8,color:"#a5f3fc",textDecoration:"none",fontSize:".76rem",fontWeight:800,marginBottom:16}}><i className="fa-solid fa-cubes" /> ДОКМАРКЕТ</Link><h1 style={{ color: "white", fontSize: "clamp(1.55rem,6vw,1.9rem)", margin: "0 0 7px", fontWeight: 850 }}>{title}</h1><p style={{ color: "#94a3b8", margin: "0 0 24px", fontSize: ".9rem", lineHeight:1.55 }}>{subtitle}</p>{children}<Link to="/" style={{display:"block",marginTop:22,paddingTop:16,borderTop:"1px solid rgba(255,255,255,.07)",color:"#94a3b8",textDecoration:"none",fontSize:".78rem"}}>← Вернуться на главную ДокМаркета</Link></div></div>; }
+export function Label({ text, children }) { return <label style={{ color: "#cbd5e1", fontSize: ".82rem", display: "grid", gap: 7 }}>{text}{children}</label>; }
+export function ErrorText({ children }) { return <span role="alert" style={{ color: "#fb7185", fontSize: ".75rem", lineHeight: 1.35 }}>{children}</span>; }
 
-const demoButton = { flex: "1 1 165px", padding: "8px", borderRadius: 9, border: "1px solid rgba(148,163,184,.2)", background: "rgba(255,255,255,.04)", color: "#94a3b8", cursor: "pointer" };
-const passwordToggle = { position: "absolute", top: "50%", right: 8, transform: "translateY(-50%)", width: 34, height: 34, border: 0, borderRadius: 8, background: "transparent", color: "#94a3b8", cursor: "pointer" };
-const recoveryButton = { justifySelf: "end", padding: 0, border: 0, background: "transparent", color: "#67e8f9", fontSize: ".78rem", cursor: "pointer" };
+const demoButton = { flex: "1 1 165px", padding: "9px", borderRadius: 9, border: "1px solid rgba(148,163,184,.2)", background: "rgba(255,255,255,.04)", color: "#94a3b8", cursor: "pointer" };
+const passwordToggle = { position: "absolute", top: "50%", right: 8, transform: "translateY(-50%)", width: 36, height: 36, border: 0, borderRadius: 8, background: "transparent", color: "#94a3b8", cursor: "pointer" };
+const recoveryButton = { justifySelf: "end", padding: 0, border: 0, background: "transparent", color: "#67e8f9", fontSize: ".8rem", cursor: "pointer" };
