@@ -18,6 +18,7 @@ import Market from './pages/Market';
 import PlatformHome from './pages/PlatformHome';
 import PlatformReviews from './pages/PlatformReviews';
 import MarketOffer from './pages/MarketOffer';
+import MarketOfferDemo from './pages/MarketOfferDemo';
 import MarketSpecialist from './pages/MarketSpecialist';
 import MarketFavorites from './pages/MarketFavorites';
 import MarketCart from './pages/MarketCart';
@@ -61,6 +62,7 @@ const AuthenticatedApp = () => (
     <Route path="/ForLawyers" element={<LayoutWrapper currentPageName="ForLawyers"><ForLawyers /></LayoutWrapper>} />
     <Route path="/BusinessCabinet" element={<ProtectedRoute allowedRoles={['lawyer']}><LayoutWrapper currentPageName="BusinessCabinet"><BusinessCabinet /></LayoutWrapper></ProtectedRoute>} />
     <Route path="/market/offer/:offerId" element={<LayoutWrapper currentPageName="Market"><MarketOffer /></LayoutWrapper>} />
+    <Route path="/market/demo/:offerId" element={<LayoutWrapper currentPageName="Market"><MarketOfferDemo /></LayoutWrapper>} />
     <Route path="/market/specialist/:specialistId" element={<LayoutWrapper currentPageName="Market"><MarketSpecialist /></LayoutWrapper>} />
     <Route path="/market/favorites" element={<LayoutWrapper currentPageName="Market"><MarketFavorites /></LayoutWrapper>} />
     <Route path="/market/cart" element={<LayoutWrapper currentPageName="Market"><MarketCart /></LayoutWrapper>} />
