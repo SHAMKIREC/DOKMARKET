@@ -1,7 +1,7 @@
 import { readLocal, writeLocal } from "@/services/localStorageService";
 
 const CART_KEY = "marketplace:cart";
-const CART_TYPES = new Set(["ready_file", "guide", "bundle", "online_form"]);
+const CART_TYPES = new Set(["ready_file", "guide", "bundle", "online_form", "platform_generator", "service"]);
 
 export function isCartEligible(offer) {
   return Boolean(offer && CART_TYPES.has(offer.type) && Number(offer.price) > 0);
@@ -18,7 +18,19 @@ export function isInCart(offerId) {
 export function addToCart(offer) {
   const items = listCart();
   if (!isCartEligible(offer) || items.some(item => item.offerId === offer.id)) return items;
-  const next = [...items, { offerId: offer.id, createdAt: new Date().toISOString() }];
+  const snapshot = {
+    offerId: offer.id,
+    serviceId: offer.serviceId || null,
+    type: offer.type,
+    title: offer.title,
+    providerName: offer.providerName || "ДокМаркет",
+    price: Number(offer.price || 0),
+    priceType: offer.priceType || "fixed",
+    formats: offer.formats || [],
+    actionUrl: offer.actionUrl || null,
+    createdAt: new Date().toISOString(),
+  };
+  const next = [...items, snapshot];
   writeLocal(CART_KEY, next);
   return next;
 }
@@ -27,6 +39,11 @@ export function removeFromCart(offerId) {
   const next = listCart().filter(item => item.offerId !== offerId);
   writeLocal(CART_KEY, next);
   return next;
+}
+
+export function clearCart() {
+  writeLocal(CART_KEY, []);
+  return [];
 }
 
 export function toggleCart(offer) {
