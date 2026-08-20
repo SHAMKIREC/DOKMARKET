@@ -20,7 +20,7 @@ async function rest(path: string, init: RequestInit = {}) {
 }
 
 async function getRoom(roomCode: string) {
-  const rows = await rest(`collective_rooms?room_code=eq.${encodeURIComponent(roomCode.toUpperCase())}&select=id,room_code,type,subtype,respondent,common_data,status,total_participants,created_at`);
+  const rows = await rest(`collective_rooms?room_code=eq.${encodeURIComponent(roomCode.toUpperCase())}&select=id,room_code,type,subtype,respondent,common_data,status,total_participants,created_at,finalized_at`);
   return Array.isArray(rows) ? rows[0] || null : null;
 }
 
@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
     const roomCode = String(body?.roomCode || "").trim().toUpperCase();
     if (!roomCode) return json({ error: "ROOM_REQUIRED" }, 400);
     const room = await getRoom(roomCode);
-    if (!room || room.status !== "open") return json({ error: "ROOM_NOT_FOUND" }, 404);
+    if (!room) return json({ error: "ROOM_NOT_FOUND" }, 404);
 
     if (action === "peek") {
       const completed = await rest(`collective_participants?room_id=eq.${room.id}&status=eq.completed&select=id`);
@@ -46,6 +46,7 @@ Deno.serve(async (req) => {
     }
 
     if (action === "claim") {
+      if (room.status !== "open") return json({ error: "ROOM_CLOSED" }, 409);
       const existingToken = String(body?.participantToken || "").trim();
       if (existingToken) {
         const existing = await getParticipantByToken(room.id, existingToken);
@@ -65,6 +66,7 @@ Deno.serve(async (req) => {
     if (action === "get") return json({ room, participant });
 
     if (action === "save") {
+      if (room.status !== "open") return json({ error: "ROOM_CLOSED" }, 409);
       const claimantData = body?.claimantData && typeof body.claimantData === "object" ? body.claimantData : {};
       const circumstances = body?.circumstances && typeof body.circumstances === "object" ? body.circumstances : {};
       const evidence = Array.isArray(body?.evidence) ? body.evidence : [];
