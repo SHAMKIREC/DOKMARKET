@@ -9,7 +9,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import ScrollToHash from '@/components/ScrollToHash';
 import JoinRoom from './pages/JoinRoom';
 import ForLawyers from './pages/ForLawyers';
-import BusinessCabinet from './pages/BusinessCabinet';
+import SellerCabinet from './pages/SellerCabinet';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import RegisterLawyer from './pages/RegisterLawyer';
@@ -63,7 +63,7 @@ const AuthenticatedApp = () => (
     <Route path="/Forbidden" element={<LayoutWrapper currentPageName="Forbidden"><Forbidden /></LayoutWrapper>} />
     <Route path="/join/:roomId" element={<LayoutWrapper currentPageName="JoinRoom"><JoinRoom /></LayoutWrapper>} />
     <Route path="/ForLawyers" element={<LayoutWrapper currentPageName="ForLawyers"><ForLawyers /></LayoutWrapper>} />
-    <Route path="/BusinessCabinet" element={<ProtectedRoute allowedRoles={['lawyer']}><LayoutWrapper currentPageName="BusinessCabinet"><BusinessCabinet /></LayoutWrapper></ProtectedRoute>} />
+    <Route path="/BusinessCabinet" element={<ProtectedRoute allowedRoles={['lawyer']}><LayoutWrapper currentPageName="BusinessCabinet"><SellerCabinet /></LayoutWrapper></ProtectedRoute>} />
     <Route path="/market/offer/:offerId" element={<LayoutWrapper currentPageName="Market"><MarketOffer /></LayoutWrapper>} />
     <Route path="/market/demo/:offerId" element={<LayoutWrapper currentPageName="Market"><MarketOfferDemo /></LayoutWrapper>} />
     <Route path="/market/specialist/:specialistId" element={<LayoutWrapper currentPageName="Market"><MarketSpecialist /></LayoutWrapper>} />
