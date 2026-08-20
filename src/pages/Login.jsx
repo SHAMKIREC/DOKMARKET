@@ -18,19 +18,19 @@ export default function Login() {
 
   function setValue(name, value) { setForm(current => ({ ...current, [name]: value })); setErrors(current => ({ ...current, [name]: "", form: "" })); }
   function enter(user) { navigate(user.role === "lawyer" ? "/BusinessCabinet" : "/Dashboard", { replace: true }); }
-  function submit(event) {
+  async function submit(event) {
     event.preventDefault();
     const next = { email: validateEmail(form.email), password: form.password ? "" : "Введите пароль." };
     setErrors(next);
     if (Object.values(next).some(Boolean)) return;
     setBusy(true);
-    try { enter(login(form.email.trim().toLowerCase(), form.password)); }
+    try { enter(await login(form.email.trim().toLowerCase(), form.password)); }
     catch { setErrors(current => ({ ...current, form: "Неверный email или пароль." })); }
     finally { setBusy(false); }
   }
-  function demo(role) {
+  async function demo(role) {
     setErrors({});
-    try { enter(loginAsDemo(role)); } catch { setErrors({ form: "Демо-вход недоступен." }); }
+    try { enter(await loginAsDemo(role)); } catch { setErrors({ form: "Демо-вход недоступен." }); }
   }
 
   return <AuthShell title="Вход в Досудебку" subtitle="Войдите, чтобы сохранить документы и продолжить работу с претензиями.">
@@ -38,7 +38,7 @@ export default function Login() {
       <Label text="Email"><input style={fieldStyle(errors.email)} type="email" autoComplete="email" placeholder="Введите email" value={form.email} onChange={event => setValue("email", event.target.value)} aria-invalid={Boolean(errors.email)} />{errors.email && <ErrorText>{errors.email}</ErrorText>}</Label>
       <Label text="Пароль"><span style={{ position: "relative", display: "block" }}><input style={{ ...fieldStyle(errors.password), paddingRight: 48 }} type={showPassword ? "text" : "password"} autoComplete="current-password" placeholder="Введите пароль" value={form.password} onChange={event => setValue("password", event.target.value)} aria-invalid={Boolean(errors.password)} /><button type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"} title={showPassword ? "Скрыть пароль" : "Показать пароль"} style={passwordToggle}><i className={`fa-regular ${showPassword ? "fa-eye-slash" : "fa-eye"}`} /></button></span>{errors.password && <ErrorText>{errors.password}</ErrorText>}</Label>
       <button type="button" onClick={() => setRecoveryNotice(true)} style={recoveryButton}>Забыли пароль?</button>
-      {recoveryNotice && <p role="status" style={{ color: "#94a3b8", margin: 0, fontSize: ".8rem", lineHeight: 1.45 }}>Восстановление пароля появится после подключения сервера.</p>}
+      {recoveryNotice && <p role="status" style={{ color: "#94a3b8", margin: 0, fontSize: ".8rem", lineHeight: 1.45 }}>Восстановление пароля подключим следующим этапом через Supabase Auth.</p>}
       {errors.form && <ErrorText>{errors.form}</ErrorText>}
       <button style={{ ...button, opacity: busy ? .7 : 1 }} disabled={busy}>{busy ? "Входим…" : "Войти"}</button>
     </form>
