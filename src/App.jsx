@@ -17,7 +17,7 @@ import Forbidden from './pages/Forbidden';
 import Market from './pages/Market';
 import PlatformHome from './pages/PlatformHome';
 import PlatformReviews from './pages/PlatformReviews';
-import MarketOffer from './pages/MarketOffer';
+import CatalogOfferRouter from './pages/CatalogOfferRouter';
 import MarketOfferDemo from './pages/MarketOfferDemo';
 import MarketSpecialist from './pages/MarketSpecialist';
 import MarketFavorites from './pages/MarketFavorites';
@@ -37,11 +37,7 @@ import './styles/app-shell-overrides.css';
 
 const { Pages, Layout } = pagesConfig;
 const protectedPages = new Set(['Dashboard', 'MyDocuments', 'Profile']);
-
-const LayoutWrapper = ({ children, currentPageName }) => Layout ?
-  <Layout currentPageName={currentPageName}>{children}</Layout>
-  : <>{children}</>;
-
+const LayoutWrapper = ({ children, currentPageName }) => Layout ? <Layout currentPageName={currentPageName}>{children}</Layout> : <>{children}</>;
 const DosudebkaHome = Pages.Home;
 
 const AuthenticatedApp = () => (
@@ -50,13 +46,8 @@ const AuthenticatedApp = () => (
     <Route path="/market" element={<LayoutWrapper currentPageName="Market"><Market /></LayoutWrapper>} />
     <Route path="/reviews" element={<LayoutWrapper currentPageName="Reviews"><PlatformReviews /></LayoutWrapper>} />
     <Route path="/dosudebka" element={<LayoutWrapper currentPageName="Dosudebka"><DosudebkaHome /></LayoutWrapper>} />
-
-    {Object.entries(Pages).filter(([path]) => !protectedPages.has(path) && path !== 'Home').map(([path, Page]) => (
-      <Route key={path} path={`/${path}`} element={<LayoutWrapper currentPageName={path}><Page /></LayoutWrapper>} />
-    ))}
-    {Object.entries(Pages).filter(([path]) => protectedPages.has(path)).map(([path, Page]) => (
-      <Route key={path} path={`/${path}`} element={<ProtectedRoute allowedRoles={['user', 'lawyer']}><LayoutWrapper currentPageName={path}><Page /></LayoutWrapper></ProtectedRoute>} />
-    ))}
+    {Object.entries(Pages).filter(([path]) => !protectedPages.has(path) && path !== 'Home').map(([path, Page]) => <Route key={path} path={`/${path}`} element={<LayoutWrapper currentPageName={path}><Page /></LayoutWrapper>} />)}
+    {Object.entries(Pages).filter(([path]) => protectedPages.has(path)).map(([path, Page]) => <Route key={path} path={`/${path}`} element={<ProtectedRoute allowedRoles={['user', 'lawyer']}><LayoutWrapper currentPageName={path}><Page /></LayoutWrapper></ProtectedRoute>} />)}
     <Route path="/Login" element={<LayoutWrapper currentPageName="Login"><Login /></LayoutWrapper>} />
     <Route path="/Register" element={<LayoutWrapper currentPageName="Register"><Register /></LayoutWrapper>} />
     <Route path="/RegisterLawyer" element={<LayoutWrapper currentPageName="RegisterLawyer"><RegisterLawyer /></LayoutWrapper>} />
@@ -64,7 +55,7 @@ const AuthenticatedApp = () => (
     <Route path="/join/:roomId" element={<LayoutWrapper currentPageName="JoinRoom"><JoinRoom /></LayoutWrapper>} />
     <Route path="/ForLawyers" element={<LayoutWrapper currentPageName="ForLawyers"><ForLawyers /></LayoutWrapper>} />
     <Route path="/BusinessCabinet" element={<ProtectedRoute allowedRoles={['lawyer']}><LayoutWrapper currentPageName="BusinessCabinet"><SellerCabinet /></LayoutWrapper></ProtectedRoute>} />
-    <Route path="/market/offer/:offerId" element={<LayoutWrapper currentPageName="Market"><MarketOffer /></LayoutWrapper>} />
+    <Route path="/market/offer/:offerId" element={<LayoutWrapper currentPageName="Market"><CatalogOfferRouter /></LayoutWrapper>} />
     <Route path="/market/demo/:offerId" element={<LayoutWrapper currentPageName="Market"><MarketOfferDemo /></LayoutWrapper>} />
     <Route path="/market/specialist/:specialistId" element={<LayoutWrapper currentPageName="Market"><MarketSpecialist /></LayoutWrapper>} />
     <Route path="/market/favorites" element={<LayoutWrapper currentPageName="Market"><MarketFavorites /></LayoutWrapper>} />
@@ -87,14 +78,6 @@ const AuthenticatedApp = () => (
 );
 
 function App() {
-  return (
-    <AuthProvider>
-      <QueryClientProvider client={queryClientInstance}>
-        <Router><ScrollToHash /><AuthenticatedApp /><DocMarketAssistant /></Router>
-        <Toaster />
-      </QueryClientProvider>
-    </AuthProvider>
-  )
+  return <AuthProvider><QueryClientProvider client={queryClientInstance}><Router><ScrollToHash /><AuthenticatedApp /><DocMarketAssistant /></Router><Toaster /></QueryClientProvider></AuthProvider>
 }
-
 export default App
