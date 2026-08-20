@@ -21,13 +21,16 @@ export function addToCart(offer) {
   const snapshot = {
     offerId: offer.id,
     serviceId: offer.serviceId || null,
+    specialistId: offer.specialistId || offer.providerId || null,
+    providerType: offer.providerType || "platform",
     type: offer.type,
     title: offer.title,
+    description: offer.description || "",
     providerName: offer.providerName || "ДокМаркет",
     price: Number(offer.price || 0),
     priceType: offer.priceType || "fixed",
     formats: offer.formats || [],
-    actionUrl: offer.actionUrl || null,
+    actionUrl: offer.actionUrl || `/market/offer/${offer.id}`,
     createdAt: new Date().toISOString(),
   };
   const next = [...items, snapshot];
