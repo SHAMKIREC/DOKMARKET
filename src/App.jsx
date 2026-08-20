@@ -26,6 +26,7 @@ import TemplateStudioFill from './pages/TemplateStudioFill';
 import TemplateStudioGuard from './template-studio/components/TemplateStudioGuard';
 import SpecialistMaterials from './pages/SpecialistMaterials';
 import SpecialistMaterialNew from './pages/SpecialistMaterialNew';
+import './styles/unified-docmarket-theme.css';
 
 const { Pages, Layout } = pagesConfig;
 const protectedPages = new Set(['Dashboard', 'MyDocuments', 'Profile']);
@@ -64,10 +65,10 @@ const AuthenticatedApp = () => (
     <Route path="/market/:direction/:section/:category" element={<LayoutWrapper currentPageName="Market"><Market /></LayoutWrapper>} />
     <Route path="/market/:direction/:section/:category/:situation" element={<LayoutWrapper currentPageName="Market"><Market /></LayoutWrapper>} />
     <Route path="/market/:direction/:section/:category/:situation/offers" element={<LayoutWrapper currentPageName="Market"><Market /></LayoutWrapper>} />
-    <Route path="/template-studio" element={<LayoutWrapper currentPageName="TemplateStudio"><TemplateStudioGuard><TemplateStudio /></TemplateStudioGuard></LayoutWrapper>} />
-    <Route path="/template-studio/new" element={<LayoutWrapper currentPageName="TemplateStudio"><TemplateStudioGuard><TemplateStudioNew /></TemplateStudioGuard></LayoutWrapper>} />
-    <Route path="/template-studio/:templateId/edit" element={<LayoutWrapper currentPageName="TemplateStudio"><TemplateStudioGuard><TemplateStudioEditor /></TemplateStudioGuard></LayoutWrapper>} />
-    <Route path="/template-studio/:templateId/fill" element={<LayoutWrapper currentPageName="TemplateStudio"><TemplateStudioGuard><TemplateStudioFill /></TemplateStudioGuard></LayoutWrapper>} />
+    <Route path="/template-studio" element={<LayoutWrapper currentPageName="TemplateStudio"><TemplateStudioGuard><TemplateStudio /></LayoutWrapper>} />
+    <Route path="/template-studio/new" element={<LayoutWrapper currentPageName="TemplateStudio"><TemplateStudioGuard><TemplateStudioNew /></LayoutWrapper>} />
+    <Route path="/template-studio/:templateId/edit" element={<LayoutWrapper currentPageName="TemplateStudio"><TemplateStudioGuard><TemplateStudioEditor /></LayoutWrapper>} />
+    <Route path="/template-studio/:templateId/fill" element={<LayoutWrapper currentPageName="TemplateStudio"><TemplateStudioGuard><TemplateStudioFill /></LayoutWrapper>} />
     <Route path="/specialist/materials" element={<ProtectedRoute allowedRoles={['lawyer']}><LayoutWrapper currentPageName="SpecialistMaterials"><SpecialistMaterials /></LayoutWrapper></ProtectedRoute>} />
     <Route path="/specialist/materials/new" element={<ProtectedRoute allowedRoles={['lawyer']}><LayoutWrapper currentPageName="SpecialistMaterials"><SpecialistMaterialNew /></LayoutWrapper></ProtectedRoute>} />
     <Route path="*" element={<PageNotFound />} />
