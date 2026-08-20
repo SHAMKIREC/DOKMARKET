@@ -1,4 +1,5 @@
 import { restRequest } from "@/lib/supabaseRest";
+import { createServiceTasks } from "@/marketplace/services/serviceTaskService";
 
 function totalOf(items = []) {
   return items.reduce((sum, item) => sum + Number(item.price || 0), 0);
@@ -46,6 +47,7 @@ export async function createDraftOrder(userId, items = []) {
       offerId: item.offerId || item.id || null,
       serviceId: item.serviceId || null,
       specialistId: item.specialistId || null,
+      specialistUserId: item.specialistUserId || item.sellerId || null,
       providerType: item.providerType || "platform",
       formats: item.formats || [],
       actionUrl: item.actionUrl || null,
@@ -55,6 +57,7 @@ export async function createDraftOrder(userId, items = []) {
     },
   }));
   await restRequest("order_items", { method: "POST", body: payload, prefer: "return=minimal" });
+  await createServiceTasks(order, items);
   return order;
 }
 
