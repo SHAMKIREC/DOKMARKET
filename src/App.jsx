@@ -13,6 +13,7 @@ import SellerCabinet from './pages/SellerCabinet';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import RegisterLawyer from './pages/RegisterLawyer';
+import LegalDocument from './pages/LegalDocument';
 import Forbidden from './pages/Forbidden';
 import Market from './pages/Market';
 import PlatformHome from './pages/PlatformHome';
@@ -52,6 +53,8 @@ const AuthenticatedApp = () => (
     <Route path="/Login" element={<LayoutWrapper currentPageName="Login"><Login /></LayoutWrapper>} />
     <Route path="/Register" element={<LayoutWrapper currentPageName="Register"><Register /></LayoutWrapper>} />
     <Route path="/RegisterLawyer" element={<LayoutWrapper currentPageName="RegisterLawyer"><RegisterLawyer /></LayoutWrapper>} />
+    <Route path="/privacy" element={<LayoutWrapper currentPageName="Privacy"><LegalDocument type="privacy" /></LayoutWrapper>} />
+    <Route path="/terms" element={<LayoutWrapper currentPageName="Terms"><LegalDocument type="terms" /></LayoutWrapper>} />
     <Route path="/Forbidden" element={<LayoutWrapper currentPageName="Forbidden"><Forbidden /></LayoutWrapper>} />
     <Route path="/join/:roomId" element={<LayoutWrapper currentPageName="JoinRoom"><JoinRoom /></LayoutWrapper>} />
     <Route path="/ForLawyers" element={<LayoutWrapper currentPageName="ForLawyers"><ForLawyers /></LayoutWrapper>} />
