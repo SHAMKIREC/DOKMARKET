@@ -23,14 +23,8 @@ export default function MarketOffer() {
   const inCart = isInCart(offer.id);
   const cartEligible = isCartEligible(offer);
 
-  function refresh(action) {
-    action();
-    setRevision(value => value + 1);
-  }
-
-  function toggleCurrentCart() {
-    refresh(() => toggleCart(offer));
-  }
+  function refresh(action) { action(); setRevision(value => value + 1); }
+  function toggleCurrentCart() { refresh(() => toggleCart(offer)); }
 
   return <MarketFrame>
     <MarketNavigation crumbs={[{ label: "ДокМаркет", to: "/market" }, { label: "Решения", to: offersPath }, { label: offer.title }]} backTo={offersPath} />
@@ -45,21 +39,23 @@ export default function MarketOffer() {
         <div className="market-choice"><span style={{ color: "#64748b", fontSize: ".7rem" }}>Цена</span><h3 style={{ marginTop: 7 }}>{formattedPrice}</h3></div>
         <div className="market-choice"><span style={{ color: "#64748b", fontSize: ".7rem" }}>Форматы</span><h3 style={{ marginTop: 7 }}>{offer.formats?.join(" / ") || "Онлайн"}</h3></div>
         <div className="market-choice"><h3>Для кого подходит</h3><p>{offer.suitableFor || "Для пользователей с задачей, соответствующей описанию решения."}</p></div>
-        <div className="market-choice"><h3>Что входит</h3><p>{offer.whatIncluded || offer.description}</p></div>
-        <div className="market-choice"><h3>Как использовать</h3><p>{offer.usage || "Откройте решение и следуйте инструкции."}</p></div>
+        <div className="market-choice"><h3>Что получите</h3><p>{offer.whatIncluded || offer.description}</p></div>
+        <div className="market-choice"><h3>Как это работает</h3><p>{offer.usage || "Откройте решение и следуйте инструкции."}</p></div>
         {offer.deliveryTime && <div className="market-choice"><h3>Срок выполнения</h3><p>{offer.deliveryTime}</p></div>}
       </div>
 
       {offer.type !== "service" && <section className="market-preview">
         <div className="market-preview-paper"><span className="market-preview-watermark">ДокМаркет</span>{(offer.previewText || [offer.title, offer.description]).map((line, index) => <p key={`${line}-${index}`}>{line}</p>)}<div className="market-preview-fade" /></div>
-        <div><h2 className="market-heading" style={{ fontSize: "1.4rem" }}>Превью документа</h2><p className="market-lead">Показан ознакомительный фрагмент документа.</p><p className="market-note"><i className="fa-solid fa-circle-info" />Для платных материалов полный документ оформляется через общую корзину ДокМаркета.</p>{offer.type === "platform_generator" ? <Link className="market-action primary" to={offer.actionUrl || "/Generator"}>Заполнить онлайн</Link> : cartEligible ? <button className={`market-action primary ${inCart ? "active" : ""}`} type="button" onClick={toggleCurrentCart}><i className="fa-solid fa-cart-shopping" />{inCart ? "Убрать из корзины" : "Получить полный документ"}</button> : <button className="market-action" type="button" onClick={() => setNotice("Это бесплатное решение будет доступно из карточки сразу после публикации файла автором.")}>Открыть решение</button>}</div>
+        <div><h2 className="market-heading" style={{ fontSize: "1.4rem" }}>Посмотреть перед покупкой</h2><p className="market-lead">Показан ознакомительный фрагмент. Онлайн-формы можно попробовать в демо без оплаты.</p><p className="market-note"><i className="fa-solid fa-circle-info" />Полная платная версия оформляется через общую корзину ДокМаркета.</p>{offer.type === "platform_generator" ? <Link className="market-action primary" to={offer.actionUrl || "/Generator"}>Заполнить онлайн</Link> : offer.type === "online_form" ? <Link className="market-action primary" to={`/market/demo/${offer.id}`}><i className="fa-solid fa-flask" />Попробовать демо</Link> : cartEligible ? <button className={`market-action primary ${inCart ? "active" : ""}`} type="button" onClick={toggleCurrentCart}><i className="fa-solid fa-cart-shopping" />{inCart ? "Убрать из корзины" : "Получить полный документ"}</button> : <button className="market-action" type="button" onClick={() => setNotice("Это бесплатное решение станет доступно здесь сразу после публикации файла автором.")}>Открыть решение</button>}</div>
       </section>}
 
       <p className="market-note"><i className="fa-solid fa-circle-exclamation" />Перед использованием проверьте документ под вашу ситуацию. При необходимости обратитесь к специалисту.</p>
       <div className="market-offer-actions market-offer-purchase">
         {offer.type === "platform_generator" ? <Link className="market-action primary" to={offer.actionUrl || "/Generator"}>Заполнить онлайн</Link>
+          : offer.type === "online_form" ? <Link className="market-action primary" to={`/market/demo/${offer.id}`}><i className="fa-solid fa-flask" />Открыть демо</Link>
           : cartEligible ? <button className={`market-action primary ${inCart ? "active" : ""}`} type="button" onClick={toggleCurrentCart}><i className="fa-solid fa-cart-shopping" />{inCart ? "Убрать из корзины" : offer.type === "service" ? "Добавить услугу в корзину" : "Добавить в корзину"}</button>
-            : <button className="market-action primary" type="button" onClick={() => setNotice("Решение пока не опубликовано для оформления.")}>Открыть решение</button>}
+          : <button className="market-action primary" type="button" onClick={() => setNotice("Решение пока не опубликовано для оформления.")}>Открыть решение</button>}
+        {offer.type === "online_form" && cartEligible && <button className={`market-action ${inCart ? "active" : ""}`} type="button" onClick={toggleCurrentCart}><i className="fa-solid fa-cart-shopping" />{inCart ? "В корзине" : "Добавить полную версию"}</button>}
         {inCart && <Link className="market-action" to="/market/cart"><i className="fa-solid fa-arrow-right" />Перейти в корзину</Link>}
         <button className={`market-action ${favorite ? "active" : ""}`} type="button" onClick={() => refresh(() => toggleFavorite(offer.id, "offer"))}><i className={`${favorite ? "fa-solid" : "fa-regular"} fa-heart`} />{favorite ? "Убрать из избранного" : "В избранное"}</button>
         {specialist && <Link className="market-action" to={`/market/specialist/${specialist.id}`}>Посмотреть специалиста</Link>}
