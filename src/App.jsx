@@ -29,6 +29,7 @@ import TemplateStudioGuard from './template-studio/components/TemplateStudioGuar
 import SpecialistMaterials from './pages/SpecialistMaterials';
 import SpecialistMaterialNew from './pages/SpecialistMaterialNew';
 import './styles/unified-docmarket-theme.css';
+import './styles/app-shell-overrides.css';
 
 const { Pages, Layout } = pagesConfig;
 const protectedPages = new Set(['Dashboard', 'MyDocuments', 'Profile']);
