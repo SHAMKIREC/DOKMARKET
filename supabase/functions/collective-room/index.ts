@@ -6,11 +6,7 @@ const cors = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
-  status,
-  headers: { ...cors, "Content-Type": "application/json" },
-});
-
+const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json" } });
 const url = Deno.env.get("SUPABASE_URL")!;
 const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const headers = { apikey: serviceKey, Authorization: `Bearer ${serviceKey}`, "Content-Type": "application/json" };
@@ -29,7 +25,7 @@ async function getRoom(roomCode: string) {
 }
 
 async function getParticipantByToken(roomId: string, token: string) {
-  const rows = await rest(`collective_participants?room_id=eq.${encodeURIComponent(roomId)}&participant_token=eq.${encodeURIComponent(token)}&select=id,participant_token,slot_index,role,status,claimant_data,circumstances,evidence,completed_at`);
+  const rows = await rest(`collective_participants?room_id=eq.${encodeURIComponent(roomId)}&participant_token=eq.${encodeURIComponent(token)}&select=id,participant_token,slot_index,role,status,claimant_data,circumstances,evidence,evidence_files,legal_options,completed_at`);
   return Array.isArray(rows) ? rows[0] || null : null;
 }
 
@@ -72,11 +68,21 @@ Deno.serve(async (req) => {
       const claimantData = body?.claimantData && typeof body.claimantData === "object" ? body.claimantData : {};
       const circumstances = body?.circumstances && typeof body.circumstances === "object" ? body.circumstances : {};
       const evidence = Array.isArray(body?.evidence) ? body.evidence : [];
+      const evidenceFiles = body?.evidenceFiles && typeof body.evidenceFiles === "object" ? body.evidenceFiles : {};
+      const legalOptions = Array.isArray(body?.selectedLegalOptions) ? body.selectedLegalOptions : [];
       const completed = Boolean(body?.completed);
       const rows = await rest(`collective_participants?id=eq.${participant.id}`, {
         method: "PATCH",
         headers: { Prefer: "return=representation" },
-        body: JSON.stringify({ claimant_data: claimantData, circumstances, evidence, status: completed ? "completed" : "in_progress", completed_at: completed ? new Date().toISOString() : null }),
+        body: JSON.stringify({
+          claimant_data: claimantData,
+          circumstances,
+          evidence,
+          evidence_files: evidenceFiles,
+          legal_options: legalOptions,
+          status: completed ? "completed" : "in_progress",
+          completed_at: completed ? new Date().toISOString() : null,
+        }),
       });
       return json({ room, participant: Array.isArray(rows) ? rows[0] : rows });
     }
