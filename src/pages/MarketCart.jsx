@@ -9,11 +9,11 @@ const typeLabel = type => offerTypeLabels[type] || ({ platform_generator: "Ум�
 
 function resolveCartItem(entry) {
   const catalogOffer = offers.find(offer => offer.id === entry.offerId);
-  if (catalogOffer) return { ...entry, ...catalogOffer };
+  if (catalogOffer) return { ...catalogOffer, ...entry };
   if (entry.serviceId) {
     const service = getPlatformService(entry.serviceId);
     const serviceOffer = serviceToCartOffer(service);
-    if (serviceOffer) return { ...entry, ...serviceOffer };
+    if (serviceOffer) return { ...serviceOffer, ...entry };
   }
   return entry?.title ? entry : null;
 }
