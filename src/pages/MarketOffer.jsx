@@ -21,22 +21,21 @@ export default function MarketOffer() {
   const formattedPrice = offer.priceType === "free" ? "Бесплатно" : `${offer.priceType === "from" ? "от " : ""}${Number(offer.price).toLocaleString("ru-RU")} ₽`;
   const favorite = isFavorite(offer.id, "offer");
   const inCart = isInCart(offer.id);
+  const cartEligible = isCartEligible(offer);
 
   function refresh(action) {
     action();
     setRevision(value => value + 1);
   }
 
-  function mainAction() {
-    if (offer.type === "service") return setNotice("Заявки специалисту будут подключены следующим этапом.");
-    if (offer.type === "online_form") return setNotice("В MVP показан сценарий онлайн-формы. Подключение опубликованного шаблона специалиста будет следующим этапом.");
-    setNotice("В MVP скачивание доступно в демо-режиме. В production полный файл будет доступен после оплаты.");
+  function toggleCurrentCart() {
+    refresh(() => toggleCart(offer));
   }
 
   return <MarketFrame>
     <MarketNavigation crumbs={[{ label: "ДокМаркет", to: "/market" }, { label: "Решения", to: offersPath }, { label: offer.title }]} backTo={offersPath} />
     <section className="market-panel market-glass">
-      <div className="market-offer-top"><div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}><span className="market-badge">{offer.providerType === "platform" ? "От платформы" : "Проверенный специалист"}</span><span className="market-badge">{offerTypeLabels[offer.type]}</span></div><span style={{ color: "#fbbf24" }}><i className="fa-solid fa-star" /> {offer.rating}</span></div>
+      <div className="market-offer-top"><div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}><span className="market-badge">{offer.providerType === "platform" ? "От платформы" : "Проверенный специалист"}</span><span className="market-badge">{offerTypeLabels[offer.type]}</span></div><span className="market-rating"><i className="fa-solid fa-star" /> {offer.rating}</span></div>
       <h1 className="market-heading">{offer.title}</h1>
       <p className="market-lead">{offer.description}</p>
 
@@ -53,20 +52,20 @@ export default function MarketOffer() {
 
       {offer.type !== "service" && <section className="market-preview">
         <div className="market-preview-paper"><span className="market-preview-watermark">ДокМаркет</span>{(offer.previewText || [offer.title, offer.description]).map((line, index) => <p key={`${line}-${index}`}>{line}</p>)}<div className="market-preview-fade" /></div>
-        <div><h2 className="market-heading" style={{ fontSize: "1.4rem" }}>Превью документа</h2><p className="market-lead">Показан ознакомительный фрагмент без возможности скачать полный файл.</p><p className="market-note"><i className="fa-solid fa-circle-info" />Демо-режим: оформление будет подключено позже.</p><button className="market-secondary market-action" type="button" onClick={() => setNotice("В MVP скачивание доступно в демо-режиме. В production полный файл будет доступен после оплаты.")}>Получить полный документ</button></div>
+        <div><h2 className="market-heading" style={{ fontSize: "1.4rem" }}>Превью документа</h2><p className="market-lead">Показан ознакомительный фрагмент документа.</p><p className="market-note"><i className="fa-solid fa-circle-info" />Для платных материалов полный документ оформляется через общую корзину ДокМаркета.</p>{offer.type === "platform_generator" ? <Link className="market-action primary" to={offer.actionUrl || "/Generator"}>Заполнить онлайн</Link> : cartEligible ? <button className={`market-action primary ${inCart ? "active" : ""}`} type="button" onClick={toggleCurrentCart}><i className="fa-solid fa-cart-shopping" />{inCart ? "Убрать из корзины" : "Получить полный документ"}</button> : <button className="market-action" type="button" onClick={() => setNotice("Это бесплатное решение будет доступно из карточки сразу после публикации файла автором.")}>Открыть решение</button>}</div>
       </section>}
 
       <p className="market-note"><i className="fa-solid fa-circle-exclamation" />Перед использованием проверьте документ под вашу ситуацию. При необходимости обратитесь к специалисту.</p>
       <div className="market-offer-actions market-offer-purchase">
         {offer.type === "platform_generator" ? <Link className="market-action primary" to={offer.actionUrl || "/Generator"}>Заполнить онлайн</Link>
-          : ["ready_file", "guide", "bundle"].includes(offer.type) && isCartEligible(offer) ? <button className={`market-action primary ${inCart ? "active" : ""}`} type="button" onClick={() => refresh(() => toggleCart(offer))}><i className="fa-solid fa-cart-shopping" />{inCart ? "В корзине" : "В корзину"}</button>
-            : <button className="market-action primary" type="button" onClick={mainAction}>{offer.type === "service" ? "Обратиться к специалисту" : "Заполнить онлайн"}</button>}
-        {offer.type === "online_form" && isCartEligible(offer) && <button className={`market-action ${inCart ? "active" : ""}`} type="button" onClick={() => refresh(() => toggleCart(offer))}><i className="fa-solid fa-cart-shopping" />{inCart ? "В корзине" : "В корзину"}</button>}
-        <button className={`market-action ${favorite ? "active" : ""}`} type="button" onClick={() => refresh(() => toggleFavorite(offer.id, "offer"))}><i className={`${favorite ? "fa-solid" : "fa-regular"} fa-heart`} />{favorite ? "В избранном" : "В избранное"}</button>
+          : cartEligible ? <button className={`market-action primary ${inCart ? "active" : ""}`} type="button" onClick={toggleCurrentCart}><i className="fa-solid fa-cart-shopping" />{inCart ? "Убрать из корзины" : offer.type === "service" ? "Добавить услугу в корзину" : "Добавить в корзину"}</button>
+            : <button className="market-action primary" type="button" onClick={() => setNotice("Решение пока не опубликовано для оформления.")}>Открыть решение</button>}
+        {inCart && <Link className="market-action" to="/market/cart"><i className="fa-solid fa-arrow-right" />Перейти в корзину</Link>}
+        <button className={`market-action ${favorite ? "active" : ""}`} type="button" onClick={() => refresh(() => toggleFavorite(offer.id, "offer"))}><i className={`${favorite ? "fa-solid" : "fa-regular"} fa-heart`} />{favorite ? "Убрать из избранного" : "В избранное"}</button>
         {specialist && <Link className="market-action" to={`/market/specialist/${specialist.id}`}>Посмотреть специалиста</Link>}
       </div>
     </section>
 
-    {notice && <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, zIndex: 80, display: "grid", placeItems: "center", padding: 20, background: "rgba(2,6,23,.78)", backdropFilter: "blur(7px)" }} onMouseDown={() => setNotice("")}><section className="market-panel market-glass" style={{ maxWidth: 470 }} onMouseDown={event => event.stopPropagation()}><span className="market-icon"><i className="fa-solid fa-circle-info" /></span><h2 className="market-heading" style={{ fontSize: "1.35rem" }}>Демонстрационный режим</h2><p className="market-lead">{notice}</p><button className="market-primary" type="button" onClick={() => setNotice("")}>Понятно</button></section></div>}
+    {notice && <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, zIndex: 80, display: "grid", placeItems: "center", padding: 20, background: "rgba(2,6,23,.78)", backdropFilter: "blur(7px)" }} onMouseDown={() => setNotice("")}><section className="market-panel market-glass" style={{ maxWidth: 470 }} onMouseDown={event => event.stopPropagation()}><span className="market-icon"><i className="fa-solid fa-circle-info" /></span><h2 className="market-heading" style={{ fontSize: "1.35rem" }}>Пока недоступно</h2><p className="market-lead">{notice}</p><button className="market-primary" type="button" onClick={() => setNotice("")}>Понятно</button></section></div>}
   </MarketFrame>;
 }
