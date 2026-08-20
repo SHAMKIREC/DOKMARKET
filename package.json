@@ -1,5 +1,5 @@
 {
-  "name": "dosudebka",
+  "name": "dokmarket",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -8,6 +8,8 @@
     "build": "vite build",
     "lint": "eslint . --quiet",
     "lint:fix": "eslint . --fix",
+    "lint:copy": "node scripts/lint-copy.mjs",
+    "lint:copy:strict": "node scripts/lint-copy.mjs --strict",
     "typecheck": "tsc -p ./jsconfig.json",
     "preview": "vite preview"
   },
@@ -88,7 +90,7 @@
     "baseline-browser-mapping": "^2.8.32",
     "eslint": "^9.19.0",
     "eslint-plugin-react": "^7.37.4",
-    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.18",
     "eslint-plugin-unused-imports": "^4.3.0",
     "globals": "^15.14.0",
