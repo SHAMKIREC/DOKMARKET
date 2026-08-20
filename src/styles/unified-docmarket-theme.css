@@ -117,6 +117,8 @@
   border-color:rgba(103,232,249,.22)!important;
 }
 .market-specialist-card p[style*="#e5c787"]{color:var(--dm-cyan-light)!important}
+.market-page [style*="#e5c787"],.market-page [style*="#ddb66f"],.market-page [style*="#fbbf24"]{color:var(--dm-violet-light)!important}
+.market-rating,.market-rating-star{color:var(--dm-violet-light)!important}
 .market-price{color:var(--dm-cyan-light)!important}
 .market-preview{background:rgba(15,23,42,.66)!important;border-color:rgba(103,232,249,.15)!important}
 .market-preview-watermark{color:rgba(14,165,233,.18)!important}
