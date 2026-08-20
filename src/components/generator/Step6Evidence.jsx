@@ -1,124 +1,112 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import FileAttachment from "@/components/generator/FileAttachment";
-import DatePickerField from "@/components/generator/DatePickerField";
-
-const S = { width: "100%", padding: "12px 16px", borderRadius: 12, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "white", fontSize: "0.875rem", outline: "none" };
-const SE = { ...S, border: "1px solid #f43f5e" };
-const TA = { ...S, resize: "vertical" };
-const TAE = { ...SE, resize: "vertical" };
-
-const COURSE_EVIDENCE = [
-  { value: "Договор или публичная оферта", desc: "Оферта, договор обучения или условия оказания услуг" },
-  { value: "Чек или подтверждение оплаты", desc: "Чек, банковская выписка, платёжное поручение или кредитные документы" },
-  { value: "Рекламные материалы и обещания", desc: "Лендинг, презентация, вебинар или сообщения с обещанными условиями" },
-  { value: "Скриншоты личного кабинета курса", desc: "Программа, доступные модули, сроки и фактически предоставленные материалы" },
-  { value: "Переписка с поддержкой", desc: "Обращения о возврате, доступе, качестве или переносе обучения" },
-  { value: "Переписка с куратором", desc: "Подтверждение обещанной или отсутствующей обратной связи" },
-  { value: "Заявление на возврат", desc: "Ранее направленное требование о возврате денежных средств" },
-  { value: "Ответ онлайн-школы", desc: "Отказ, расчёт удержаний или иной ответ исполнителя" },
-  { value: "Кредитный договор или рассрочка", desc: "Документы банка или сервиса рассрочки, если обучение оплачено заёмными средствами" },
-  { value: "Другое", desc: "Иные материалы, подтверждающие условия продажи и нарушение" },
-];
-
-const DEBT_EVIDENCE = [
-  { value: "Расписка", desc: "Оригинал или копия расписки о получении денег" },
-  { value: "Договор займа", desc: "Письменный договор займа и приложения к нему" },
-  { value: "Договор или иной документ об обязательстве", desc: "Договор аренды, услуг, поставки или иной документ, из которого возник долг" },
-  { value: "Банковские переводы", desc: "Выписка или квитанции, подтверждающие передачу денег" },
-  { value: "Подтверждение частичного возврата", desc: "Переводы, расписки или иные документы о частичном погашении" },
-  { value: "Переписка с должником", desc: "Сообщения, где должник признаёт долг, сумму или срок возврата" },
-  { value: "Ранее направленное требование", desc: "Претензия, письмо или сообщение с требованием вернуть долг" },
-  { value: "Подтверждение получения требования", desc: "Почтовое уведомление, отметка вручения, электронная доставка" },
-  { value: "Свидетельские показания", desc: "Показания лиц, знающих обстоятельства передачи денег или исполнения договора" },
-  { value: "Другое", desc: "Иные материалы, подтверждающие наличие и размер обязательства" },
-];
-
-const EVIDENCE_BY_TYPE = {
-  labor: [
-    { value: "Переписка с работодателем или руководителем", desc: "Письма и сообщения о работе, выплатах и требованиях" },
-    { value: "Банковские выписки", desc: "Выписки и подтверждения фактических выплат" },
-    { value: "Журнал учёта рабочего времени", desc: "Журнал с датами и часами работы" },
-    { value: "Табель или график смен", desc: "Табель, график, ведомость или наряды" },
-    { value: "Свидетельские показания", desc: "Показания коллег, подтверждающих факт работы" },
-    { value: "Трудовой договор", desc: "Подписанный трудовой договор или его копия" },
-    { value: "Приказ о приёме или увольнении", desc: "Копия приказа или выписка из него" },
-    { value: "Расчётные листки", desc: "Расчётные листки и ведомости начислений" },
-    { value: "Скриншоты переписки", desc: "Снимки экрана с датами и участниками переписки" },
-    { value: "Пропуск или документы о допуске к работе", desc: "Пропуск, доверенность, служебные документы" },
-    { value: "Аудио, фото или иные материалы", desc: "Иные материалы, подтверждающие работу и нарушение" },
-  ],
-  product: [
-    { value: "Чек или квитанция", desc: "Кассовый чек, товарный чек или квитанция" },
-    { value: "Договор или заказ", desc: "Договор купли-продажи, заказ или электронная карточка покупки" },
-    { value: "Скриншот заказа", desc: "Карточка заказа, товара и статуса доставки" },
-    { value: "Фото или видео дефекта", desc: "Материалы, на которых виден недостаток или повреждение" },
-    { value: "Переписка с продавцом", desc: "Письма и сообщения по существу проблемы" },
-    { value: "Обращение в поддержку", desc: "Номер обращения и ответы службы поддержки" },
-    { value: "Отказ продавца", desc: "Письменный отказ или скриншот решения продавца" },
-    { value: "Акт диагностики", desc: "Акт проверки качества или диагностики" },
-    { value: "Заключение экспертизы", desc: "Заключение специалиста или независимого эксперта" },
-    { value: "Гарантийный талон", desc: "Гарантийный талон или сведения о гарантии" },
-    { value: "Документы о ремонте", desc: "Заказ-наряд, акт ремонта или квитанция сервиса" },
-    { value: "Подтверждение доставки", desc: "Накладная, акт или сведения службы доставки" },
-    { value: "Банковская выписка", desc: "Подтверждение оплаты товара и связанных расходов" },
-    { value: "Другое", desc: "Иные материалы, подтверждающие покупку и нарушение" },
-  ],
-  course: COURSE_EVIDENCE,
-  infoproduct: COURSE_EVIDENCE,
-  debt: DEBT_EVIDENCE,
-  civil: DEBT_EVIDENCE,
-};
-
-const DEFAULT_EVIDENCE = [
-  { value: "Переписка", desc: "Переписка по существу дела" },
-  { value: "Документы", desc: "Подтверждающие документы" },
-  { value: "Свидетельские показания", desc: "Показания свидетелей" },
-];
-
-const TYPE_TIPS = {
-  labor: "Для трудового спора особенно полезны документы о фактической работе, начислениях и выплатах.",
-  product: "Для товара желательно приложить подтверждение покупки и материалы, показывающие недостаток или обращение к продавцу.",
-  course: "Для онлайн-курса сохраняйте оферту и рекламу на дату покупки: условия на сайте позднее могут измениться.",
-  infoproduct: "Для онлайн-курса сохраняйте оферту и рекламу на дату покупки: условия на сайте позднее могут измениться.",
-  debt: "Для денежного требования особенно важны документы о передаче денег и признании долга должником.",
-  civil: "Для денежного требования особенно важны документы о передаче денег и признании долга должником.",
-};
+import { deleteEvidenceFile, getEvidenceFileUrl, uploadEvidenceFile } from "@/services/evidenceStorageService";
 
 const NO_EVIDENCE_VALUE = "Нет доказательств";
 const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const SUPPORTED_EXTENSIONS = /\.(pdf|doc|docx|xls|xlsx|jpg|jpeg|png|webp)$/i;
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-function normalizeEvidenceFileState(rawFiles) {
-  const groups = {};
-  if (Array.isArray(rawFiles)) {
-    rawFiles.forEach(file => {
-      const label = file?.evidenceLabel || file?.evidenceId;
-      if (label && file?.name) groups[label] = [...(groups[label] || []), file];
-    });
-    return groups;
-  }
-  Object.entries(rawFiles || {}).forEach(([label, value]) => {
+const LISTS = {
+  labor: [
+    ["Трудовой договор", "Подписанный договор или его копия"],
+    ["Приказ о приёме или увольнении", "Копия приказа или выписка"],
+    ["Расчётные листки", "Начисления и удержания"],
+    ["Банковские выписки", "Фактические выплаты работодателя"],
+    ["Табель или график смен", "Рабочее время, смены, наряды"],
+    ["Переписка с работодателем или руководителем", "Сообщения о работе, выплатах и требованиях"],
+    ["Скриншоты переписки", "Снимки экрана с датами и участниками"],
+    ["Пропуск или документы о допуске к работе", "Подтверждение фактической работы"],
+    ["Свидетельские показания", "Коллега или другое лицо подтверждает обстоятельства"],
+    ["Аудио, фото или иные материалы", "Иные относимые материалы"],
+  ],
+  product: [
+    ["Чек или квитанция", "Подтверждение покупки"],
+    ["Договор или заказ", "Договор, заказ или карточка покупки"],
+    ["Скриншот заказа", "Товар, цена, продавец, доставка"],
+    ["Фото или видео дефекта", "Материалы с недостатком товара"],
+    ["Переписка с продавцом", "Обращения и ответы продавца"],
+    ["Отказ продавца", "Письменный отказ или решение по обращению"],
+    ["Акт диагностики", "Проверка качества или диагностика"],
+    ["Заключение экспертизы", "Заключение специалиста или эксперта"],
+    ["Гарантийный талон", "Сведения о гарантии"],
+    ["Документы о ремонте", "Заказ-наряд, акт или квитанция"],
+    ["Подтверждение доставки", "Накладная, акт, сведения перевозчика"],
+    ["Банковская выписка", "Оплата и связанные расходы"],
+    ["Другое", "Иные материалы по покупке и недостатку"],
+  ],
+  course: [
+    ["Договор или публичная оферта", "Условия оказания услуг на дату покупки"],
+    ["Чек или подтверждение оплаты", "Чек, выписка, платёжное поручение"],
+    ["Рекламные материалы и обещания", "Лендинг, презентация, вебинар, сообщения"],
+    ["Скриншоты личного кабинета курса", "Модули, сроки и фактически предоставленный доступ"],
+    ["Переписка с поддержкой", "Обращения о возврате, доступе или качестве"],
+    ["Переписка с куратором", "Обещанная или отсутствующая обратная связь"],
+    ["Заявление на возврат", "Ранее направленное требование"],
+    ["Ответ онлайн-школы", "Отказ, расчёт удержаний или иной ответ"],
+    ["Кредитный договор или рассрочка", "Если обучение оплачено заёмными средствами"],
+    ["Другое", "Иные материалы по спору"],
+  ],
+  debt: [
+    ["Расписка", "Расписка о получении денег"],
+    ["Договор займа", "Договор займа и приложения"],
+    ["Договор или иной документ об обязательстве", "Документ, из которого возник долг"],
+    ["Банковские переводы", "Подтверждение передачи денег"],
+    ["Подтверждение частичного возврата", "Переводы или расписки о погашении"],
+    ["Переписка с должником", "Признание долга, суммы или срока"],
+    ["Ранее направленное требование", "Претензия, письмо или сообщение"],
+    ["Подтверждение получения требования", "Почтовое или электронное подтверждение"],
+    ["Свидетельские показания", "Лица, знающие обстоятельства обязательства"],
+    ["Другое", "Иные материалы о наличии и размере долга"],
+  ],
+};
+LISTS.infoproduct = LISTS.course;
+LISTS.civil = LISTS.debt;
+
+const TIPS = {
+  labor: "Особенно полезны документы о фактической работе, начислениях и выплатах.",
+  product: "Желательно приложить подтверждение покупки и материалы, показывающие недостаток.",
+  course: "Сохраняйте оферту и рекламу на дату покупки: условия на сайте могут измениться.",
+  infoproduct: "Сохраняйте оферту и рекламу на дату покупки: условия на сайте могут измениться.",
+  debt: "Особенно важны документы о передаче денег и признании долга.",
+  civil: "Особенно важны документы о передаче денег и признании долга.",
+};
+
+const inputStyle = { width: "100%", padding: "11px 13px", borderRadius: 10, background: "rgba(255,255,255,.045)", border: "1px solid rgba(255,255,255,.1)", color: "white", outline: "none" };
+
+function normalizeGroups(raw) {
+  const out = {};
+  Object.entries(raw || {}).forEach(([label, value]) => {
     const source = Array.isArray(value) ? value : Array.isArray(value?.files) ? value.files : value?.name ? [value] : [];
-    groups[label] = source.filter(file => file?.name).map(file => ({
-      ...file,
-      evidenceId: file.evidenceId || label,
-      evidenceLabel: file.evidenceLabel || label,
-    }));
+    if (source.length) out[label] = source.map(file => ({ ...file, evidenceId: file.evidenceId || label, evidenceLabel: file.evidenceLabel || label }));
   });
-  return groups;
+  return out;
 }
 
-function serializeEvidenceFileState(groups) {
-  return Object.fromEntries(Object.entries(groups).filter(([, group]) => group?.length).map(([label, group]) => {
-    const files = group.map(file => ({ ...file, evidenceId: file.evidenceId || label, evidenceLabel: file.evidenceLabel || label }));
-    const representative = files.find(file => !/\.(jpg|jpeg|png|webp)$/i.test(file.name || "")) || files[0];
-    return [label, { ...representative, evidenceId: label, evidenceLabel: label, files }];
+function serializeGroups(groups) {
+  return Object.fromEntries(Object.entries(groups).filter(([, values]) => values?.length).map(([label, values]) => {
+    const files = values.map(file => ({
+      id: file.id,
+      evidenceId: label,
+      evidenceLabel: label,
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      storageBucket: file.storageBucket,
+      storagePath: file.storagePath,
+      storageKey: file.storageKey,
+      url: file.url || null,
+      width: file.width || null,
+      height: file.height || null,
+      embeddedType: file.embeddedType || null,
+    }));
+    return [label, { ...files[0], files }];
   }));
 }
 
-function compressImageForPdf(file) {
+function compressImage(file) {
   return new Promise((resolve, reject) => {
-    const sourceUrl = URL.createObjectURL(file);
+    const src = URL.createObjectURL(file);
     const image = new Image();
     image.onload = () => {
       try {
@@ -127,111 +115,121 @@ function compressImageForPdf(file) {
         const canvas = document.createElement("canvas");
         canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
         canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
-        const context = canvas.getContext("2d");
-        context.fillStyle = "#ffffff";
-        context.fillRect(0, 0, canvas.width, canvas.height);
-        context.drawImage(image, 0, 0, canvas.width, canvas.height);
-        const url = canvas.toDataURL("image/jpeg", 0.8);
-        resolve({ url, width: canvas.width, height: canvas.height, embeddedType: "image/jpeg" });
-      } catch (error) {
-        reject(error);
-      } finally {
-        URL.revokeObjectURL(sourceUrl);
-      }
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        resolve({ url: canvas.toDataURL("image/jpeg", .8), width: canvas.width, height: canvas.height, embeddedType: "image/jpeg" });
+      } catch (error) { reject(error); }
+      finally { URL.revokeObjectURL(src); }
     };
-    image.onerror = () => {
-      URL.revokeObjectURL(sourceUrl);
-      reject(new Error("Не удалось обработать изображение"));
-    };
-    image.src = sourceUrl;
+    image.onerror = () => { URL.revokeObjectURL(src); reject(new Error("IMAGE_READ_FAILED")); };
+    image.src = src;
   });
 }
 
 export default function Step6Evidence({ claimData, updateClaimData, nextStep, prevStep }) {
-  const [selected, setSelected] = useState(claimData.evidence || []);
-  const [files, setFiles] = useState(() => normalizeEvidenceFileState(claimData.evidenceFiles || {}));
+  const [selected, setSelected] = useState(Array.isArray(claimData.evidence) ? claimData.evidence : []);
+  const [files, setFiles] = useState(() => normalizeGroups(claimData.evidenceFiles));
   const [witness, setWitness] = useState(claimData.witness || { name: "", birthDate: "", text: "", date: "" });
-  const [evidenceComment, setEvidenceComment] = useState(claimData.evidenceComment || "");
+  const [comment, setComment] = useState(claimData.evidenceComment || "");
+  const [busyLabel, setBusyLabel] = useState("");
   const [fileError, setFileError] = useState("");
   const [formError, setFormError] = useState("");
-
-  const evidenceList = EVIDENCE_BY_TYPE[claimData.type] || DEFAULT_EVIDENCE;
+  const list = useMemo(() => (LISTS[claimData.type] || [["Документы", "Подтверждающие документы"], ["Переписка", "Переписка по существу дела"], ["Свидетельские показания", "Показания свидетеля"]]).map(([value, desc]) => ({ value, desc })), [claimData.type]);
+  const noEvidence = selected.includes(NO_EVIDENCE_VALUE);
   const hasWitness = selected.includes("Свидетельские показания");
-  const hasNoEvidence = selected.includes(NO_EVIDENCE_VALUE);
-  const canProceed = selected.length > 0;
 
   useEffect(() => {
-    updateClaimData({
-      evidence: selected,
-      evidenceFiles: serializeEvidenceFileState(files),
-      evidenceComment,
-      witness: selected.includes("Свидетельские показания") ? witness : null,
-    });
-  }, [evidenceComment, files, selected, updateClaimData, witness]);
+    updateClaimData({ evidence: selected, evidenceFiles: serializeGroups(files), evidenceComment: comment, witness: hasWitness ? witness : null });
+  }, [selected, files, comment, witness, hasWitness, updateClaimData]);
 
-  const toggle = (val) => {
+  function toggle(value) {
     setFormError("");
-    if (val === NO_EVIDENCE_VALUE) {
-      setSelected(s => s.includes(val) ? [] : [val]);
-    } else {
-      setSelected(s => {
-        const withoutNo = s.filter(x => x !== NO_EVIDENCE_VALUE);
-        return withoutNo.includes(val) ? withoutNo.filter(x => x !== val) : [...withoutNo, val];
-      });
-    }
-  };
-
-  async function handleFile(ev, item) {
-    const selectedFiles = Array.from(ev.target.files || []);
-    if (!selectedFiles.length) return;
-    if (selectedFiles.some(file => !SUPPORTED_EXTENSIONS.test(file.name))) {
-      setFileError("Поддерживаются изображения JPG, PNG, WEBP и документы PDF, DOC, DOCX, XLS, XLSX.");
-      ev.target.value = "";
+    if (value === NO_EVIDENCE_VALUE) {
+      setSelected(current => current.includes(value) ? [] : [value]);
       return;
     }
-    if (selectedFiles.some(file => file.size > 10 * 1024 * 1024)) {
+    setSelected(current => {
+      const clean = current.filter(item => item !== NO_EVIDENCE_VALUE);
+      return clean.includes(value) ? clean.filter(item => item !== value) : [...clean, value];
+    });
+  }
+
+  async function handleFiles(event, label) {
+    const inputFiles = Array.from(event.target.files || []);
+    event.target.value = "";
+    if (!inputFiles.length) return;
+    if (inputFiles.some(file => !SUPPORTED_EXTENSIONS.test(file.name))) {
+      setFileError("Поддерживаются JPG, PNG, WEBP, PDF, DOC, DOCX, XLS и XLSX.");
+      return;
+    }
+    if (inputFiles.some(file => file.size > MAX_FILE_SIZE)) {
       setFileError("Размер одного файла не должен превышать 10 МБ.");
-      ev.target.value = "";
       return;
     }
 
+    setBusyLabel(label);
+    setFileError("");
+    const prepared = [];
     try {
-      const preparedFiles = await Promise.all(selectedFiles.map(async file => {
-        const imageData = IMAGE_TYPES.has(file.type) || /\.(jpg|jpeg|png|webp)$/i.test(file.name)
-          ? await compressImageForPdf(file)
-          : { url: null, width: null, height: null, embeddedType: null };
-        return {
+      for (const file of inputFiles) {
+        let cloud = {};
+        try {
+          cloud = await uploadEvidenceFile(file, claimData);
+        } catch (error) {
+          if (error?.message !== "AUTH_REQUIRED") throw error;
+          setFileError("Файл добавлен локально. Чтобы он сохранился между устройствами, войдите в аккаунт.");
+        }
+        const imageData = IMAGE_TYPES.has(file.type) || /\.(jpg|jpeg|png|webp)$/i.test(file.name) ? await compressImage(file) : {};
+        prepared.push({
           id: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-          evidenceId: item,
-          evidenceLabel: item,
+          evidenceId: label,
+          evidenceLabel: label,
           name: file.name,
           size: file.size,
           type: file.type || "application/octet-stream",
+          ...cloud,
           ...imageData,
-        };
-      }));
-      setFiles(current => ({ ...current, [item]: [...(current[item] || []), ...preparedFiles] }));
-      setFileError("");
-    } catch {
-      console.error("Не удалось подготовить изображение для PDF.");
-      setFileError("Не удалось обработать изображение. Попробуйте другой файл.");
+        });
+      }
+      setFiles(current => ({ ...current, [label]: [...(current[label] || []), ...prepared] }));
+    } catch (error) {
+      console.error(error);
+      setFileError("Не удалось сохранить файл на сервере. Проверьте соединение и попробуйте ещё раз.");
     } finally {
-      ev.target.value = "";
+      setBusyLabel("");
     }
   }
 
-  function removeFile(item, fileId, fileIndex) {
-    setFiles(f => {
-      const next = { ...f };
-      const remaining = (next[item] || []).filter((file, index) => file.id ? file.id !== fileId : index !== fileIndex);
-      if (remaining.length) next[item] = remaining;
-      else delete next[item];
-      return next;
-    });
+  async function viewFile(file) {
+    try {
+      if (file.url) {
+        window.open(file.url, "_blank", "noopener,noreferrer");
+        return;
+      }
+      const url = await getEvidenceFileUrl(file, claimData);
+      if (!url) throw new Error("SIGNED_URL_FAILED");
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch {
+      setFileError("Не удалось открыть файл. Обновите страницу и попробуйте ещё раз.");
+    }
   }
 
-  function viewFile(file) {
-    if (file.url) window.open(file.url, "_blank");
+  async function removeFile(label, file, index) {
+    try {
+      if (file.storagePath) await deleteEvidenceFile(file, claimData);
+      setFiles(current => {
+        const next = { ...current };
+        const remaining = (next[label] || []).filter((candidate, candidateIndex) => candidate.id ? candidate.id !== file.id : candidateIndex !== index);
+        if (remaining.length) next[label] = remaining;
+        else delete next[label];
+        return next;
+      });
+      setFileError("");
+    } catch {
+      setFileError("Не удалось удалить файл с сервера.");
+    }
   }
 
   function save() {
@@ -239,108 +237,47 @@ export default function Step6Evidence({ claimData, updateClaimData, nextStep, pr
       setFormError("Выберите хотя бы один вид доказательства или отметьте «Нет доказательств».");
       return;
     }
-    if (hasWitness) {
-      const witnessName = String(witness.name || "").trim();
-      const witnessText = String(witness.text || "").trim();
-      if (witnessName.length < 5 || witnessText.length < 20) {
-        setFormError("Для свидетельских показаний укажите ФИО свидетеля и что именно он может подтвердить.");
-        return;
-      }
+    if (hasWitness && (String(witness.name || "").trim().length < 5 || String(witness.text || "").trim().length < 20)) {
+      setFormError("Для свидетеля укажите ФИО и что именно он может подтвердить.");
+      return;
     }
     setFormError("");
-    updateClaimData({
-      evidence: selected,
-      evidenceFiles: serializeEvidenceFileState(files),
-      evidenceComment: evidenceComment.trim(),
-      witness: hasWitness ? { ...witness, name: witness.name.trim(), text: witness.text.trim() } : null
-    });
+    updateClaimData({ evidence: selected, evidenceFiles: serializeGroups(files), evidenceComment: comment.trim(), witness: hasWitness ? { ...witness, name: witness.name.trim(), text: witness.text.trim() } : null });
     nextStep();
   }
 
-  return (
-    <div className="rounded-2xl border border-white/10" style={{ background: "rgba(255,255,255,0.03)", padding: "clamp(16px,5vw,32px)" }}>
-      <h3 className="text-xl font-bold text-white mb-2">Доказательства</h3>
-      <p style={{ color: "#9ca3af", fontSize: "0.85rem", marginBottom: 6 }}>Отметьте то, что действительно есть. Выбранные материалы попадут в перечень приложений к претензии.</p>
-      <div style={{ marginBottom: 20, padding: "11px 13px", borderRadius: 10, background: "rgba(14,165,233,0.06)", border: "1px solid rgba(14,165,233,0.16)" }}>
-        <p style={{ color: "#cbd5e1", fontSize: "0.8rem", margin: "0 0 3px" }}>{TYPE_TIPS[claimData.type] || "Выбирайте только доказательства, которые сможете приложить или предъявить при необходимости."}</p>
-        <p style={{ color: "#64748b", fontSize: "0.74rem", margin: 0 }}>Изображения можно встроить в PDF; остальные файлы будут перечислены как отдельные приложения. Для отправки по электронной почте лучше держать итоговый пакет компактным.</p>
-      </div>
-      {fileError && <p style={{ color: "#fbbf24", fontSize: "0.78rem", marginBottom: 16 }}>{fileError}</p>}
-      {formError && <p role="alert" style={{ color: "#fda4af", fontSize: "0.8rem", marginBottom: 16, padding: "10px 12px", borderRadius: 10, background: "rgba(244,63,94,.08)", border: "1px solid rgba(244,63,94,.25)" }}>{formError}</p>}
+  return <div className="rounded-2xl border border-white/10" style={{ background: "rgba(255,255,255,.03)", padding: "clamp(16px,5vw,32px)" }}>
+    <h3 style={{ color: "white", fontWeight: 800, fontSize: "1.3rem", margin: "0 0 7px" }}>Доказательства</h3>
+    <p style={{ color: "#94a3b8", fontSize: ".85rem", lineHeight: 1.6, margin: "0 0 8px" }}>Отметьте только то, что действительно есть. Загруженные файлы сохраняются в закрытом хранилище и не являются публичными.</p>
+    <div style={{ padding: "11px 13px", borderRadius: 11, background: "rgba(14,165,233,.06)", border: "1px solid rgba(14,165,233,.16)", marginBottom: 18 }}><p style={{ color: "#cbd5e1", fontSize: ".78rem", lineHeight: 1.55, margin: 0 }}>{TIPS[claimData.type] || "Выбирайте материалы, которые сможете приложить к претензии."}</p></div>
+    {fileError && <p role="status" style={{ color: "#fbbf24", fontSize: ".78rem", margin: "0 0 14px" }}>{fileError}</p>}
+    {formError && <p role="alert" style={{ color: "#fda4af", fontSize: ".8rem", padding: "10px 12px", borderRadius: 10, background: "rgba(244,63,94,.08)", border: "1px solid rgba(244,63,94,.25)", margin: "0 0 14px" }}>{formError}</p>}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
-        {evidenceList.map(ev => {
-          const checked = selected.includes(ev.value);
-          const disabled = hasNoEvidence && ev.value !== NO_EVIDENCE_VALUE;
-          const evidenceFiles = files[ev.value] || [];
-          return (
-            <div key={ev.value} style={{ borderRadius: 12, border: `1px solid ${checked ? "#0ea5e9" : "rgba(255,255,255,0.1)"}`, background: checked ? "rgba(14,165,233,0.06)" : "transparent", overflow: "hidden", opacity: disabled ? 0.4 : 1 }}>
-              <label onClick={() => !disabled && toggle(ev.value)} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 16px", cursor: disabled ? "not-allowed" : "pointer" }}>
-                <input type="checkbox" checked={checked} onChange={() => {}} style={{ marginTop: 2, width: 18, height: 18, accentColor: "#0ea5e9", flexShrink: 0 }} />
-                <div style={{ flex: 1 }}>
-                  <span style={{ display: "block", fontWeight: 500, color: "white", fontSize: "0.9rem" }}>{ev.value}</span>
-                  <span style={{ fontSize: "0.78rem", color: "#9ca3af" }}>{ev.desc}</span>
-                </div>
-              </label>
-              {checked && !disabled && (
-                <div style={{ borderTop: "1px solid rgba(14,165,233,0.15)", padding: "10px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
-                  <p style={{ color: "#cbd5e1", fontSize: "0.76rem", fontWeight: 600, margin: 0 }}>Добавить файлы к этому доказательству</p>
-                  {evidenceFiles.map((file, fileIndex) => (
-                    <FileAttachment key={file.id || `${file.name}-${fileIndex}`} file={file} evidenceLabel={ev.value} onView={viewFile} onDelete={() => removeFile(ev.value, file.id, fileIndex)} />
-                  ))}
-                  <label style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", background: "rgba(14,165,233,0.15)", color: "#22d3ee", border: "1px solid rgba(14,165,233,0.3)", borderRadius: 8, cursor: "pointer", fontSize: "0.8rem", fontWeight: 600, alignSelf: "flex-start" }}>
-                    <i className="fa-solid fa-plus"></i> {evidenceFiles.length ? "Добавить ещё файлы" : "Выбрать файлы"}
-                    <input type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp" style={{ display: "none" }} onChange={e => handleFile(e, ev.value)} />
-                  </label>
-                  <span style={{ fontSize: "0.7rem", color: "#6b7280" }}>JPG, PNG, WEBP, PDF, DOCX, XLSX · каждый файл до 10 МБ</span>
-                </div>
-              )}
-            </div>
-          );
-        })}
-
-        <div style={{ borderRadius: 12, border: `1px solid ${hasNoEvidence ? "#f59e0b" : "rgba(255,255,255,0.1)"}`, background: hasNoEvidence ? "rgba(245,158,11,0.07)" : "transparent" }}>
-          <label onClick={() => toggle(NO_EVIDENCE_VALUE)} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 16px", cursor: "pointer" }}>
-            <input type="checkbox" checked={hasNoEvidence} onChange={() => {}} style={{ marginTop: 2, width: 18, height: 18, accentColor: "#f59e0b", flexShrink: 0 }} />
-            <div style={{ flex: 1 }}>
-              <span style={{ display: "block", fontWeight: 500, color: hasNoEvidence ? "#fbbf24" : "white", fontSize: "0.9rem" }}>Нет доказательств</span>
-              <span style={{ fontSize: "0.78rem", color: "#9ca3af" }}>Выберите это осознанно, если сейчас действительно нечего приложить. Документ всё равно можно подготовить.</span>
-            </div>
+    <div style={{ display: "grid", gap: 10 }}>
+      {list.map(item => {
+        const checked = selected.includes(item.value);
+        const disabled = noEvidence;
+        const group = files[item.value] || [];
+        return <div key={item.value} style={{ borderRadius: 12, border: `1px solid ${checked ? "#0ea5e9" : "rgba(255,255,255,.1)"}`, background: checked ? "rgba(14,165,233,.06)" : "transparent", opacity: disabled ? .45 : 1 }}>
+          <label style={{ display: "flex", gap: 12, padding: "14px 16px", cursor: disabled ? "not-allowed" : "pointer" }}>
+            <input type="checkbox" disabled={disabled} checked={checked} onChange={() => toggle(item.value)} style={{ width: 18, height: 18, marginTop: 2, accentColor: "#0ea5e9" }} />
+            <span><b style={{ display: "block", color: "white", fontSize: ".88rem" }}>{item.value}</b><small style={{ color: "#94a3b8", fontSize: ".75rem" }}>{item.desc}</small></span>
           </label>
-        </div>
-      </div>
+          {checked && !disabled && <div style={{ borderTop: "1px solid rgba(14,165,233,.15)", padding: "10px 16px", display: "grid", gap: 8 }}>
+            {group.map((file, index) => <FileAttachment key={file.id || `${file.name}-${index}`} file={file} evidenceLabel={item.value} onView={viewFile} onDelete={target => removeFile(item.value, target, index)} />)}
+            <label style={{ display: "inline-flex", alignItems: "center", gap: 7, justifySelf: "start", padding: "7px 12px", borderRadius: 8, background: "rgba(14,165,233,.14)", border: "1px solid rgba(14,165,233,.3)", color: "#22d3ee", fontSize: ".78rem", fontWeight: 700, cursor: busyLabel ? "wait" : "pointer" }}><i className={`fa-solid ${busyLabel === item.value ? "fa-spinner fa-spin" : "fa-plus"}`} />{busyLabel === item.value ? "Сохраняем…" : group.length ? "Добавить ещё" : "Выбрать файлы"}<input type="file" multiple disabled={Boolean(busyLabel)} accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp" style={{ display: "none" }} onChange={event => handleFiles(event, item.value)} /></label>
+            <small style={{ color: "#64748b", fontSize: ".69rem" }}>JPG, PNG, WEBP, PDF, DOCX, XLSX · до 10 МБ на файл</small>
+          </div>}
+        </div>;
+      })}
 
-      {!selected.length && (
-        <p style={{ color: "#f59e0b", fontSize: "0.8rem", marginBottom: 14 }}><i className="fa-solid fa-triangle-exclamation" style={{ marginRight: 6 }}></i>Выберите хотя бы один пункт или отметьте «Нет доказательств».</p>
-      )}
-
-      {hasWitness && (
-        <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 12, padding: 16, marginBottom: 20 }}>
-          <h4 style={{ fontWeight: 600, color: "white", marginBottom: 6 }}>Данные свидетеля</h4>
-          <p style={{ color: "#94a3b8", fontSize: ".76rem", margin: "0 0 14px" }}>Укажите человека только если он действительно может подтвердить конкретные обстоятельства.</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <input style={formError && String(witness.name || "").trim().length < 5 ? SE : S} value={witness.name} onChange={e => { setWitness(w => ({ ...w, name: e.target.value })); setFormError(""); }} placeholder="ФИО свидетеля" />
-            <DatePickerField value={witness.birthDate} onChange={value => setWitness(w => ({ ...w, birthDate: value }))} />
-            <textarea style={formError && String(witness.text || "").trim().length < 20 ? TAE : TA} rows={3} value={witness.text} onChange={e => { setWitness(w => ({ ...w, text: e.target.value })); setFormError(""); }} placeholder="Что именно свидетель видел или знает по существу спора" maxLength={1000} />
-            <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, padding: "10px 14px" }}>
-              <p style={{ color: "#9ca3af", fontSize: "0.78rem", margin: 0 }}><i className="fa-solid fa-pen-line" style={{ marginRight: 6, color: "#0ea5e9" }}></i>В PDF будет предусмотрено место для подписи свидетеля.</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div style={{ marginBottom: 20 }}>
-        <label style={{ display: "block", color: "#d1d5db", fontSize: ".82rem", fontWeight: 500, marginBottom: 6 }}>Комментарий к доказательствам <span style={{ color: "#6b7280", fontWeight: 400 }}>(необязательно)</span></label>
-        <textarea style={TA} rows={3} value={evidenceComment} onChange={e => setEvidenceComment(e.target.value)} placeholder="Например: переписка подтверждает признание долга; на фото виден недостаток товара" maxLength={1500} />
-      </div>
-
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-        <button onClick={prevStep} style={{ flex: 1, minWidth: 100, padding: "12px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", color: "white", cursor: "pointer", fontWeight: 600 }}>Назад</button>
-        <button onClick={save} disabled={!canProceed}
-          style={{ flex: 2, minWidth: 140, padding: "12px", borderRadius: 12, background: canProceed ? "linear-gradient(135deg,#0ea5e9,#8b5cf6)" : "rgba(255,255,255,0.1)", border: "none", color: canProceed ? "white" : "#6b7280", cursor: canProceed ? "pointer" : "not-allowed", fontWeight: 600 }}>
-          Далее
-        </button>
-      </div>
+      <label style={{ display: "flex", gap: 12, padding: "14px 16px", borderRadius: 12, border: `1px solid ${noEvidence ? "#f59e0b" : "rgba(255,255,255,.1)"}`, background: noEvidence ? "rgba(245,158,11,.07)" : "transparent", cursor: "pointer" }}><input type="checkbox" checked={noEvidence} onChange={() => toggle(NO_EVIDENCE_VALUE)} style={{ width: 18, height: 18, marginTop: 2, accentColor: "#f59e0b" }} /><span><b style={{ display: "block", color: noEvidence ? "#fbbf24" : "white", fontSize: ".88rem" }}>Нет доказательств</b><small style={{ color: "#94a3b8", fontSize: ".75rem" }}>Документ можно подготовить и без приложений, но доказательственная позиция может быть слабее.</small></span></label>
     </div>
-  );
+
+    {hasWitness && <div style={{ marginTop: 18, padding: 16, borderRadius: 12, background: "rgba(255,255,255,.035)", border: "1px solid rgba(255,255,255,.1)", display: "grid", gap: 10 }}><h4 style={{ color: "white", margin: 0, fontWeight: 750 }}>Данные свидетеля</h4><input style={inputStyle} value={witness.name || ""} onChange={e => setWitness(current => ({ ...current, name: e.target.value }))} placeholder="ФИО свидетеля" /><input style={inputStyle} type="date" value={witness.birthDate || ""} onChange={e => setWitness(current => ({ ...current, birthDate: e.target.value }))} /><textarea style={{ ...inputStyle, minHeight: 95, resize: "vertical" }} value={witness.text || ""} onChange={e => setWitness(current => ({ ...current, text: e.target.value }))} placeholder="Что именно свидетель может подтвердить" /></div>}
+
+    <div style={{ marginTop: 18 }}><label style={{ color: "#cbd5e1", fontSize: ".78rem", display: "grid", gap: 6 }}>Комментарий к доказательствам<textarea style={{ ...inputStyle, minHeight: 80, resize: "vertical" }} value={comment} onChange={e => setComment(e.target.value)} placeholder="Необязательное пояснение к приложениям" /></label></div>
+
+    <div style={{ display: "flex", gap: 12, marginTop: 22, flexWrap: "wrap" }}><button type="button" onClick={prevStep} style={{ flex: 1, minWidth: 120, padding: 12, borderRadius: 11, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.1)", color: "white", fontWeight: 700, cursor: "pointer" }}>Назад</button><button type="button" onClick={save} disabled={Boolean(busyLabel)} style={{ flex: 2, minWidth: 180, padding: 12, borderRadius: 11, border: 0, background: "linear-gradient(135deg,#0891b2,#7c3aed)", color: "white", fontWeight: 800, cursor: busyLabel ? "wait" : "pointer", opacity: busyLabel ? .65 : 1 }}>{busyLabel ? "Сохраняем файлы…" : "Далее"}</button></div>
+  </div>;
 }
