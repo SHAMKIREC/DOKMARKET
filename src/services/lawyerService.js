@@ -1,6 +1,7 @@
 import { createLocalId, readLocal, writeLocal } from "./localStorageService";
 import { getCurrentUser } from "./authService";
 import { listDocuments } from "./documentService";
+import { restRequest } from "@/lib/supabaseRest";
 
 const PLAN_KEY = "lawyer-plan";
 const CHECK_KEY = "check-requests";
@@ -69,52 +70,32 @@ export function getLawyerDashboard() {
   return { user, plan: getLawyerPlan(), documents, checkRequests: readLocal(CHECK_KEY, []) };
 }
 
-export function listCheckRequests() {
-  return readLocal(CHECK_KEY, []);
-}
-
-export function saveCheckRequests(requests) {
-  return writeLocal(CHECK_KEY, requests);
-}
+export function listCheckRequests() { return readLocal(CHECK_KEY, []); }
+export function saveCheckRequests(requests) { return writeLocal(CHECK_KEY, requests); }
 
 export function createCheckRequest(data = {}) {
   const user = getCurrentUser();
-  const request = {
-    id: createLocalId("check"),
-    user_id: user.id,
-    status: "new",
-    created_date: new Date().toISOString(),
-    ...data,
-  };
-  if (saveCheckRequests([...listCheckRequests(), request]) === null) {
-    throw new Error("CHECK_REQUEST_SAVE_FAILED");
-  }
+  const request = { id: createLocalId("check"), user_id: user.id, status: "new", created_date: new Date().toISOString(), ...data };
+  if (saveCheckRequests([...listCheckRequests(), request]) === null) throw new Error("CHECK_REQUEST_SAVE_FAILED");
   return request;
 }
 
-export function listBusinessLeads() {
-  return readLocal(BUSINESS_LEADS_KEY, []);
-}
+export function listBusinessLeads() { return readLocal(BUSINESS_LEADS_KEY, []); }
 
 export function createBusinessLead(plan) {
   const user = getCurrentUser();
-  const lead = {
-    id: createLocalId("business-lead"),
-    user_id: user.id,
-    plan,
-    status: "new",
-    created_date: new Date().toISOString(),
-  };
-  if (writeLocal(BUSINESS_LEADS_KEY, [...listBusinessLeads(), lead]) === null) {
-    throw new Error("BUSINESS_LEAD_SAVE_FAILED");
-  }
+  if (!user?.id) throw new Error("AUTH_REQUIRED");
+  const lead = { id: createLocalId("business-lead"), user_id: user.id, plan, status: "new", created_date: new Date().toISOString() };
+  if (writeLocal(BUSINESS_LEADS_KEY, [...listBusinessLeads(), lead]) === null) throw new Error("BUSINESS_LEAD_SAVE_FAILED");
+  restRequest("business_leads", {
+    method: "POST",
+    body: { user_id: user.id, plan, status: "new", contact_data: { email: user.email || "", fullName: user.fullName || user.full_name || "" } },
+    prefer: "return=minimal",
+  }).catch(error => console.error("Supabase business lead insert failed", error));
   return lead;
 }
 
-export function listLawyerClients() {
-  return readLocal(CLIENTS_KEY, []);
-}
-
+export function listLawyerClients() { return readLocal(CLIENTS_KEY, []); }
 export function saveLawyerClients(clients) {
   if (writeLocal(CLIENTS_KEY, clients) === null) throw new Error("CLIENTS_SAVE_FAILED");
   return clients;
