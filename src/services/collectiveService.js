@@ -1,7 +1,6 @@
 import { getStoredSession, restRequest, SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/supabaseRest";
 
 const edgeUrl = `${SUPABASE_URL}/functions/v1/collective-room`;
-
 const objectValue = value => value && typeof value === "object" && !Array.isArray(value) ? value : {};
 
 async function guestRequest(action, roomCode, extra = {}) {
@@ -30,9 +29,10 @@ function normalizeParticipant(row = {}) {
     status: row.status || "invited",
     claimantData: objectValue(row.claimant_data || row.claimantData),
     circumstancesData: objectValue(row.circumstances || row.circumstancesData),
+    selectedLegalOptions: Array.isArray(row.legal_options) ? row.legal_options : Array.isArray(row.selectedLegalOptions) ? row.selectedLegalOptions : [],
     evidenceData: {
       selected: Array.isArray(row.evidence) ? row.evidence : Array.isArray(row.evidenceData?.selected) ? row.evidenceData.selected : [],
-      files: objectValue(row.evidenceData?.files),
+      files: objectValue(row.evidence_files || row.evidenceData?.files),
     },
     completedAt: row.completed_at || row.completedAt || null,
   };
@@ -44,9 +44,7 @@ export function normalizeRoom(row) {
     ? row.collective_participants.map(normalizeParticipant).sort((a, b) => a.slotIndex - b.slotIndex)
     : Array.isArray(row.members)
       ? row.members.map(normalizeParticipant).sort((a, b) => a.slotIndex - b.slotIndex)
-      : row.participant
-        ? [normalizeParticipant(row.participant)]
-        : [];
+      : row.participant ? [normalizeParticipant(row.participant)] : [];
   const commonData = objectValue(row.common_data || row.commonData);
   return {
     ...row,
@@ -69,22 +67,10 @@ export function normalizeRoom(row) {
   };
 }
 
-export function getTotalParticipants(room) {
-  return Math.max(0, Number(room?.totalParticipants || room?.total_participants || room?.max_members || 0));
-}
-
-export function isCompletedParticipant(participant) {
-  return participant?.status === "completed";
-}
-
-export function getRoomParticipants(room) {
-  return normalizeRoom(room)?.members || [];
-}
-
-export function getCompletedParticipants(room) {
-  return getRoomParticipants(room).filter(isCompletedParticipant);
-}
-
+export function getTotalParticipants(room) { return Math.max(0, Number(room?.totalParticipants || room?.total_participants || room?.max_members || 0)); }
+export function isCompletedParticipant(participant) { return participant?.status === "completed"; }
+export function getRoomParticipants(room) { return normalizeRoom(room)?.members || []; }
+export function getCompletedParticipants(room) { return getRoomParticipants(room).filter(isCompletedParticipant); }
 export function getParticipant(room, participantId) {
   if (!participantId) return null;
   return getRoomParticipants(room).find(member => member.participantId === participantId || member.participantToken === participantId || member.id === participantId) || null;
@@ -114,7 +100,6 @@ export async function createRoom(data) {
   if (!roomCode) throw new Error("ROOM_CODE_REQUIRED");
   const total = Number(data.totalParticipants || data.max_members || 0);
   if (!Number.isInteger(total) || total < 2 || total > 100) throw new Error("INVALID_PARTICIPANT_COUNT");
-
   const rooms = await restRequest("collective_rooms", {
     method: "POST",
     prefer: "return=representation",
@@ -131,7 +116,6 @@ export async function createRoom(data) {
   });
   const room = Array.isArray(rooms) ? rooms[0] : null;
   if (!room?.id) throw new Error("ROOM_SAVE_FAILED");
-
   const slots = Array.from({ length: total }, (_, index) => ({
     room_id: room.id,
     user_id: index === 0 ? session.user.id : null,
@@ -161,8 +145,7 @@ export async function updateRoom(idOrRoomCode, updates = {}) {
 
 export async function claimParticipantSlot(roomCode, participantToken) {
   const data = await guestRequest("claim", String(roomCode || "").trim().toUpperCase(), participantToken ? { participantToken } : {});
-  const room = normalizeRoom({ ...data.room, participant: data.participant });
-  return { room, participant: normalizeParticipant(data.participant) };
+  return { room: normalizeRoom({ ...data.room, participant: data.participant }), participant: normalizeParticipant(data.participant) };
 }
 
 export async function getGuestParticipant(roomCode, participantToken) {
@@ -176,6 +159,8 @@ export async function saveParticipant(roomCode, participantToken, payload = {}) 
     claimantData: objectValue(payload.claimantData),
     circumstances: objectValue(payload.circumstancesData || payload.circumstances),
     evidence: Array.isArray(payload.evidenceData?.selected) ? payload.evidenceData.selected : Array.isArray(payload.evidence) ? payload.evidence : [],
+    evidenceFiles: objectValue(payload.evidenceData?.files || payload.evidenceFiles),
+    selectedLegalOptions: Array.isArray(payload.selectedLegalOptions) ? payload.selectedLegalOptions : [],
     completed: payload.status === "completed" || Boolean(payload.completed),
   });
   return normalizeParticipant(data.participant);
@@ -192,6 +177,8 @@ export async function saveOwnerParticipant(roomCode, payload = {}) {
       claimant_data: objectValue(payload.claimantData),
       circumstances: objectValue(payload.circumstancesData || payload.circumstances),
       evidence: Array.isArray(payload.evidenceData?.selected) ? payload.evidenceData.selected : Array.isArray(payload.evidence) ? payload.evidence : [],
+      evidence_files: objectValue(payload.evidenceData?.files || payload.evidenceFiles),
+      legal_options: Array.isArray(payload.selectedLegalOptions) ? payload.selectedLegalOptions : [],
       status: payload.status === "completed" ? "completed" : "in_progress",
       completed_at: payload.status === "completed" ? (payload.completedAt || new Date().toISOString()) : null,
     },
