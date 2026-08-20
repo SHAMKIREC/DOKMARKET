@@ -1,25 +1,51 @@
 import { publicRestRequest } from "@/lib/supabaseRest";
 
-export async function loadPublishedCatalog() {
-  const rows = await publicRestRequest("catalog_items?status=eq.published&select=*&order=featured.desc,sort_order.asc,created_at.desc");
-  if (!Array.isArray(rows)) return [];
-  return rows.map((row) => ({
+function mapRow(row) {
+  if (!row) return null;
+  return {
     id: row.id,
     slug: row.slug,
     type: row.item_type,
     title: row.title,
     description: row.short_description || row.description || "",
+    longDescription: row.description || row.short_description || "",
     category: row.category || "",
     subcategory: row.subcategory || "",
     providerType: row.provider_type || "platform",
-    providerName: row.metadata?.provider_name || (row.provider_type === "platform" ? "ДокМаркет" : "Специалист"),
+    providerId: row.provider_id || null,
+    providerName: row.metadata?.provider_name || (row.provider_type === "platform" ? "ДокМаркет" : "Продавец ДокМаркета"),
     price: Number(row.price_rub || 0),
     priceType: row.price_type || "fixed",
     formats: Array.isArray(row.formats) ? row.formats : [],
     tags: Array.isArray(row.tags) ? row.tags : [],
     featured: Boolean(row.featured),
     badge: row.metadata?.badge || "",
-    route: row.metadata?.route || `/market/offer/${row.slug}`,
-    actionUrl: row.metadata?.action_route || row.metadata?.route || `/market/offer/${row.slug}`,
-  }));
+    whatIncluded: row.metadata?.what_included || "",
+    suitableFor: row.metadata?.suitable_for || "",
+    usage: row.metadata?.fill_instructions || "",
+    materialType: row.metadata?.material_type || "",
+    route: row.metadata?.route || `/market/offer/${row.id}`,
+    actionUrl: row.metadata?.action_route || row.metadata?.route || `/market/offer/${row.id}`,
+    createdAt: row.created_at,
+  };
+}
+
+export async function loadPublishedCatalog() {
+  const rows = await publicRestRequest("catalog_items?status=eq.published&select=*&order=featured.desc,sort_order.asc,created_at.desc");
+  return (Array.isArray(rows) ? rows : []).map(mapRow);
+}
+
+export async function loadPublishedCatalogItem(idOrSlug) {
+  if (!idOrSlug) return null;
+  const q = encodeURIComponent(String(idOrSlug));
+  let rows = await publicRestRequest(`catalog_items?status=eq.published&id=eq.${q}&select=*`);
+  if (!Array.isArray(rows) || !rows.length) rows = await publicRestRequest(`catalog_items?status=eq.published&slug=eq.${q}&select=*`);
+  const item = mapRow(Array.isArray(rows) ? rows[0] : null);
+  if (!item?.providerId || item.providerType !== "specialist") return item;
+  try {
+    const sellers = await publicRestRequest(`seller_profiles?user_id=eq.${encodeURIComponent(item.providerId)}&verification_status=eq.approved&is_public=eq.true&select=display_name,headline,rating,reviews_count,user_id`);
+    const seller = Array.isArray(sellers) ? sellers[0] : null;
+    if (seller) item.seller = seller;
+  } catch {}
+  return item;
 }
