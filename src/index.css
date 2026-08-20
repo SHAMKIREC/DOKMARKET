@@ -75,8 +75,6 @@
   }
 }
 
-
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -84,5 +82,31 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@media (max-width: 640px) {
+  .dm-assistant-fab {
+    right: 12px !important;
+    bottom: 12px !important;
+    width: 48px !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+  }
+
+  .dm-assistant-fab span {
+    display: none !important;
+  }
+
+  .dm-assistant {
+    right: 10px !important;
+    bottom: 70px !important;
+    width: calc(100vw - 20px) !important;
+    max-height: 72dvh !important;
+    padding: 14px !important;
+    border-radius: 16px !important;
   }
 }
