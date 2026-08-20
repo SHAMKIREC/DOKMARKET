@@ -1,5 +1,5 @@
 const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL || "https://yjmfnjulpqpkndcfcuet.supabase.co").replace(/\/$/, "");
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYXNlIiwicmVmIjoieWptZm5qdWxwcXBrbmRjZmN1ZXQiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc0NzA4NjQ4OSwiZXhwIjoyMDYyNjYyNDg5fQ.BbR-LWjcO6IeHrfhzSrMpJ_iqOaUBkcNW3Uo7zLu9DA";
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
 
 const SESSION_KEY = "dokmarket:supabase-session";
 
@@ -93,6 +93,20 @@ export async function signOut() {
   } finally {
     clearSession();
   }
+}
+
+export async function publicRestRequest(path, { method = "GET", body, prefer } = {}) {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    method,
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+      ...(prefer ? { Prefer: prefer } : {}),
+    },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  return parseResponse(response);
 }
 
 export async function restRequest(path, { method = "GET", body, token, prefer } = {}) {
