@@ -25,6 +25,7 @@ function hydrateDocument(row = {}) {
     sentMethod: row.sent_method,
     responseDueAt: row.response_due_at,
     claimData: row.claim_data,
+    platformServiceId: row.platform_service_id || "dosudebka",
   };
 }
 
@@ -42,6 +43,8 @@ function dbUpdates(updates = {}) {
   if (updates.respondent_name !== undefined) mapped.respondent_name = updates.respondent_name || "";
   if (updates.claim_data !== undefined) mapped.claim_data = updates.claim_data || {};
   if (updates.claimData !== undefined) mapped.claim_data = updates.claimData || {};
+  if (updates.platformServiceId !== undefined) mapped.platform_service_id = updates.platformServiceId || "dosudebka";
+  if (updates.platform_service_id !== undefined) mapped.platform_service_id = updates.platform_service_id || "dosudebka";
   if (updates.status !== undefined) mapped.status = updates.status;
   if (updates.expires_at !== undefined) mapped.expires_at = updates.expires_at;
   if (updates.sentAt !== undefined) mapped.sent_at = updates.sentAt;
@@ -69,20 +72,22 @@ export function listAllDocuments() {
   return readLocal(DOCUMENTS_KEY, []).sort((a, b) => new Date(b.created_date || b.created_at || 0) - new Date(a.created_date || a.created_at || 0));
 }
 
-export function listDocuments({ userId, limit } = {}) {
+export function listDocuments({ userId, limit, platformServiceId } = {}) {
   const ownerId = userId || getCurrentUser()?.id;
   if (!ownerId) return [];
   const documents = readLocal(DOCUMENTS_KEY, [])
     .filter(document => ownerOf(document) === ownerId)
+    .filter(document => !platformServiceId || (document.platformServiceId || document.platform_service_id || "dosudebka") === platformServiceId)
     .sort((a, b) => new Date(b.created_date || b.created_at || 0) - new Date(a.created_date || a.created_at || 0));
   return limit ? documents.slice(0, limit) : documents;
 }
 
 export function createDocument(data, user = getCurrentUser()) {
   const now = new Date().toISOString();
+  const platformServiceId = data.platformServiceId || data.platform_service_id || "dosudebka";
   if (!user?.id) {
     const drafts = readLocal(GUEST_DOCUMENTS_KEY, []);
-    const draft = { ...data, id: localUuid("guest-document"), status: "draft", isGuestDraft: true, created_date: now };
+    const draft = { ...data, platformServiceId, platform_service_id: platformServiceId, id: localUuid("guest-document"), status: "draft", isGuestDraft: true, created_date: now };
     if (writeLocal(GUEST_DOCUMENTS_KEY, [...drafts, draft]) === null) throw new Error("DOCUMENT_SAVE_FAILED");
     return draft;
   }
@@ -97,6 +102,8 @@ export function createDocument(data, user = getCurrentUser()) {
     ownerUserId: user.id,
     created_by_id: user.id,
     created_by: user.email,
+    platformServiceId,
+    platform_service_id: platformServiceId,
     type: normalizeType(data.type || claimData.type),
     subtype: data.subtype || claimData.subtype || "",
     mode: modeRaw === "individual" ? "solo" : modeRaw,
@@ -116,6 +123,7 @@ export function createDocument(data, user = getCurrentUser()) {
     body: {
       id,
       owner_id: user.id,
+      platform_service_id: platformServiceId,
       type: document.type,
       subtype: document.subtype,
       mode: document.mode,
