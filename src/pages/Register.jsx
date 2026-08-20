@@ -52,7 +52,7 @@ export default function Register() {
     }
   }
 
-  return <AuthShell title="Создать аккаунт" subtitle="Покупки, документы и заказы специалистов — в одном аккаунте ДокМаркета.">
+  return <AuthShell title="Регистрация" subtitle="Создайте аккаунт, чтобы покупать документы, сохранять покупки и заказывать услуги продавцов.">
     <form onSubmit={submit} noValidate style={{ display: "grid", gap: 10 }}>
       <Field name="fullName" label="ФИО" placeholder="Иванов Иван Иванович" value={form.fullName} error={errors.fullName} onChange={setValue} />
       <Field name="email" label="Email" type="email" placeholder="name@example.ru" value={form.email} error={errors.email} onChange={setValue} />
@@ -60,9 +60,9 @@ export default function Register() {
       <PasswordField name="password" label="Пароль" placeholder="Минимум 8 символов" value={form.password} error={errors.password} onChange={setValue} visible={showPassword} onToggle={() => setShowPassword(value => !value)} hint="Минимум 8 символов, буквы и цифры." />
       <PasswordField name="confirmPassword" label="Повторите пароль" placeholder="Повторите пароль" value={form.confirmPassword} error={errors.confirmPassword} onChange={setValue} visible={showConfirm} onToggle={() => setShowConfirm(value => !value)} />
 
-      <div style={{ display: "grid", gap: 9, padding: "11px 12px", border: "1px solid rgba(148,163,184,.14)", borderRadius: 12, background: "rgba(255,255,255,.025)" }}>
-        <Consent checked={form.personalData} onChange={value => setValue("personalData", value)} error={errors.personalData}>Согласен на обработку персональных данных</Consent>
-        <Consent checked={form.terms} onChange={value => setValue("terms", value)} error={errors.terms}>Принимаю пользовательское соглашение ДокМаркета</Consent>
+      <div className="dm-auth-consents">
+        <Consent checked={form.personalData} onChange={value => setValue("personalData", value)} error={errors.personalData}>Я согласен на <Link to="/privacy" target="_blank" rel="noreferrer" onClick={event => event.stopPropagation()}>обработку персональных данных</Link></Consent>
+        <Consent checked={form.terms} onChange={value => setValue("terms", value)} error={errors.terms}>Я принимаю <Link to="/terms" target="_blank" rel="noreferrer" onClick={event => event.stopPropagation()}>пользовательское соглашение ДокМаркета</Link></Consent>
       </div>
 
       {notice && <p role="status" style={{ color: "#86efac", margin: 0, fontSize: ".76rem", lineHeight: 1.4 }}>{notice}</p>}
@@ -82,8 +82,8 @@ function PasswordField({ name, label, placeholder, value, error, onChange, visib
 }
 
 export function Consent({ checked, onChange, error, children }) {
-  return <div><label style={consentStyle}><input type="checkbox" checked={checked} onChange={event => onChange(event.target.checked)} style={{ width: 18, height: 18, accentColor: "#06b6d4", flex: "0 0 auto", marginTop: 0 }} /><span>{children}</span></label>{error && <ErrorText>{error}</ErrorText>}</div>;
+  return <div><label style={consentStyle}><input type="checkbox" checked={checked} onChange={event => onChange(event.target.checked)} style={{ width: 18, height: 18, accentColor: "#06b6d4", flex: "0 0 auto", marginTop: 1 }} /><span>{children}</span></label>{error && <ErrorText>{error}</ErrorText>}</div>;
 }
 
 const hintStyle = { color: "#64748b", fontSize: ".69rem", lineHeight: 1.3 };
-const consentStyle = { display: "flex", alignItems: "flex-start", gap: 8, color: "#cbd5e1", fontSize: ".75rem", lineHeight: 1.35, cursor: "pointer" };
+const consentStyle = { display: "flex", alignItems: "flex-start", gap: 8, color: "#cbd5e1", fontSize: ".75rem", lineHeight: 1.4, cursor: "pointer" };
