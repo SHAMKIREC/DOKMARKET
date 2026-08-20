@@ -1,0 +1,25 @@
+import { useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/lib/AuthContext";
+import { directions } from "@/data/marketplaceMock";
+import { createSellerServiceDraft } from "@/marketplace/services/sellerProfileService";
+import { MaterialFrame } from "./SpecialistMaterials";
+
+export default function SpecialistServiceNew(){
+ const {user}=useAuth(); const navigate=useNavigate();
+ const [form,setForm]=useState({title:"",description:"",directionSlug:"legal",price:"",deliveryTime:"1–2 дня",whatIncluded:"",requirements:""});
+ const [saving,setSaving]=useState(false); const [error,setError]=useState("");
+ const valid=useMemo(()=>form.title.trim().length>=5&&form.description.trim().length>=15&&Number(form.price)>0,[form]);
+ const set=(key,value)=>{setForm(v=>({...v,[key]:value}));setError("")};
+ async function submit(e){e.preventDefault();if(!user?.id)return setError("Войдите в кабинет продавца заново.");if(!valid)return setError("Заполните название, описание и цену услуги.");setSaving(true);try{await createSellerServiceDraft(user.id,{title:form.title.trim(),description:form.description.trim(),directionSlug:form.directionSlug,price:Number(form.price),deliveryTime:form.deliveryTime.trim(),whatIncluded:form.whatIncluded.trim(),requirements:form.requirements.trim()});navigate("/BusinessCabinet",{replace:true});}catch(err){console.error(err);setError("Не удалось сохранить услугу. Попробуйте ещё раз.");}finally{setSaving(false)}}
+ return <MaterialFrame><header className="material-head"><div><span className="material-kicker"><i className="fa-solid fa-user-tie"/>Витрина продавца</span><h1 className="material-title">Добавить услугу</h1><p className="material-copy">Опишите конкретную работу. После сохранения услуга станет черновиком и будет доступна для отправки на модерацию.</p></div><Link className="material-secondary" to="/BusinessCabinet">К кабинету</Link></header>
+ <form className="material-form-panel material-glass" onSubmit={submit}><div className="material-form">
+  <label className="material-field wide"><span>Название услуги</span><input value={form.title} onChange={e=>set("title",e.target.value)} placeholder="Например, подготовка претензии работодателю"/></label>
+  <label className="material-field wide"><span>Что вы сделаете</span><textarea rows="4" value={form.description} onChange={e=>set("description",e.target.value)} placeholder="Простыми словами опишите результат, который получит покупатель"/></label>
+  <label className="material-field"><span>Направление</span><select value={form.directionSlug} onChange={e=>set("directionSlug",e.target.value)}>{directions.map(d=><option value={d.slug} key={d.slug}>{d.title}</option>)}</select></label>
+  <label className="material-field"><span>Цена от, ₽</span><input type="number" min="1" step="1" value={form.price} onChange={e=>set("price",e.target.value)} placeholder="1500"/></label>
+  <label className="material-field"><span>Срок выполнения</span><input value={form.deliveryTime} onChange={e=>set("deliveryTime",e.target.value)} placeholder="1–2 дня"/></label>
+  <label className="material-field wide"><span>Что входит</span><textarea rows="3" value={form.whatIncluded} onChange={e=>set("whatIncluded",e.target.value)} placeholder="Консультация, подготовка документа, одна доработка"/></label>
+  <label className="material-field wide"><span>Что нужно от покупателя</span><textarea rows="3" value={form.requirements} onChange={e=>set("requirements",e.target.value)} placeholder="Какие данные или файлы понадобятся для начала работы"/></label>
+ </div><p className="material-notice">После модерации услуга появится в вашей публичной витрине. Заказ, переписка о результате и подтверждение выполнения проходят внутри ДокМаркета.</p>{error&&<p className="material-error">{error}</p>}<div className="material-actions"><button className="material-primary" disabled={saving}>{saving?"Сохраняем…":"Сохранить черновик"}</button><Link className="material-secondary" to="/BusinessCabinet">Отмена</Link></div></form></MaterialFrame>
+}
