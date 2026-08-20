@@ -3,6 +3,16 @@ import * as authService from "@/services/authService";
 
 const AuthContext = createContext(null);
 
+async function syncUserData(user) {
+  if (!user?.id) return;
+  try {
+    const { syncDocumentsFromServer } = await import("@/services/documentService");
+    await syncDocumentsFromServer(user.id);
+  } catch (error) {
+    console.error("Supabase user data sync failed", error);
+  }
+}
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => authService.getCurrentUser());
   const [isLoading, setIsLoading] = useState(true);
@@ -12,6 +22,7 @@ export const AuthProvider = ({ children }) => {
     setIsLoading(true);
     try {
       const currentUser = await authService.loadCurrentUser();
+      await syncUserData(currentUser);
       setUser(currentUser);
       setAuthError(null);
       return currentUser;
@@ -30,6 +41,7 @@ export const AuthProvider = ({ children }) => {
     setAuthError(null);
     try {
       const nextUser = await action();
+      await syncUserData(nextUser);
       setUser(nextUser);
       return nextUser;
     } catch (error) {
