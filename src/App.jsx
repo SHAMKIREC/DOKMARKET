@@ -31,6 +31,7 @@ import TemplateStudioFill from './pages/TemplateStudioFill';
 import TemplateStudioGuard from './template-studio/components/TemplateStudioGuard';
 import SpecialistMaterials from './pages/SpecialistMaterials';
 import SpecialistMaterialNew from './pages/SpecialistMaterialNew';
+import SpecialistServiceNew from './pages/SpecialistServiceNew';
 import DocMarketAssistant from './marketplace/components/DocMarketAssistant';
 import './styles/unified-docmarket-theme.css';
 import './styles/app-shell-overrides.css';
@@ -62,15 +63,16 @@ const AuthenticatedApp = () => (
     <Route path="/market/cart" element={<LayoutWrapper currentPageName="Market"><MarketCart /></LayoutWrapper>} />
     <Route path="/market/my-service-orders" element={<ProtectedRoute allowedRoles={['user','lawyer']}><LayoutWrapper currentPageName="Market"><MyServiceOrders /></LayoutWrapper></ProtectedRoute>} />
     <Route path="/specialist/orders" element={<ProtectedRoute allowedRoles={['lawyer']}><LayoutWrapper currentPageName="SpecialistOrders"><SpecialistOrders /></LayoutWrapper></ProtectedRoute>} />
+    <Route path="/specialist/services/new" element={<ProtectedRoute allowedRoles={['lawyer']}><LayoutWrapper currentPageName="SpecialistServices"><SpecialistServiceNew /></LayoutWrapper></ProtectedRoute>} />
     <Route path="/market/:direction" element={<LayoutWrapper currentPageName="Market"><Market /></LayoutWrapper>} />
     <Route path="/market/:direction/:section" element={<LayoutWrapper currentPageName="Market"><Market /></LayoutWrapper>} />
     <Route path="/market/:direction/:section/:category" element={<LayoutWrapper currentPageName="Market"><Market /></LayoutWrapper>} />
     <Route path="/market/:direction/:section/:category/:situation" element={<LayoutWrapper currentPageName="Market"><Market /></LayoutWrapper>} />
     <Route path="/market/:direction/:section/:category/:situation/offers" element={<LayoutWrapper currentPageName="Market"><Market /></LayoutWrapper>} />
-    <Route path="/template-studio" element={<LayoutWrapper currentPageName="TemplateStudio"><TemplateStudioGuard><TemplateStudio /></TemplateStudioGuard></LayoutWrapper>} />
-    <Route path="/template-studio/new" element={<LayoutWrapper currentPageName="TemplateStudio"><TemplateStudioGuard><TemplateStudioNew /></TemplateStudioGuard></LayoutWrapper>} />
-    <Route path="/template-studio/:templateId/edit" element={<LayoutWrapper currentPageName="TemplateStudio"><TemplateStudioGuard><TemplateStudioEditor /></TemplateStudioGuard></LayoutWrapper>} />
-    <Route path="/template-studio/:templateId/fill" element={<LayoutWrapper currentPageName="TemplateStudio"><TemplateStudioGuard><TemplateStudioFill /></TemplateStudioGuard></LayoutWrapper>} />
+    <Route path="/template-studio" element={<LayoutWrapper currentPageName="TemplateStudio"><TemplateStudioGuard><TemplateStudio /></LayoutWrapper>} />
+    <Route path="/template-studio/new" element={<LayoutWrapper currentPageName="TemplateStudio"><TemplateStudioGuard><TemplateStudioNew /></LayoutWrapper>} />
+    <Route path="/template-studio/:templateId/edit" element={<LayoutWrapper currentPageName="TemplateStudio"><TemplateStudioGuard><TemplateStudioEditor /></LayoutWrapper>} />
+    <Route path="/template-studio/:templateId/fill" element={<LayoutWrapper currentPageName="TemplateStudio"><TemplateStudioGuard><TemplateStudioFill /></LayoutWrapper>} />
     <Route path="/specialist/materials" element={<ProtectedRoute allowedRoles={['lawyer']}><LayoutWrapper currentPageName="SpecialistMaterials"><SpecialistMaterials /></LayoutWrapper></ProtectedRoute>} />
     <Route path="/specialist/materials/new" element={<ProtectedRoute allowedRoles={['lawyer']}><LayoutWrapper currentPageName="SpecialistMaterials"><SpecialistMaterialNew /></LayoutWrapper></ProtectedRoute>} />
     <Route path="*" element={<PageNotFound />} />
