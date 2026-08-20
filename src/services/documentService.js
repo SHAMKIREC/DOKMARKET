@@ -1,8 +1,15 @@
-import { createLocalId, readLocal, writeLocal } from "./localStorageService";
+import { readLocal, writeLocal } from "./localStorageService";
 import { getCurrentUser } from "./authService";
 import { restRequest } from "@/lib/supabaseRest";
 
+const DOCUMENTS_KEY = "documents";
 const GUEST_DOCUMENTS_KEY = "guest-documents";
+const ownerOf = document => document.ownerUserId || document.owner_id || document.created_by_id || null;
+
+function localUuid(prefix = "document") {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
 
 function hydrateDocument(row = {}) {
   return {
@@ -44,60 +51,108 @@ function dbUpdates(updates = {}) {
   return mapped;
 }
 
-export async function listAllDocuments() {
-  const user = getCurrentUser();
-  if (!user?.id) return [];
-  return listDocuments({ userId: user.id });
+function saveDocuments(documents) {
+  if (writeLocal(DOCUMENTS_KEY, documents) === null) throw new Error("DOCUMENT_SAVE_FAILED");
+  return documents;
 }
 
-export async function listDocuments({ userId, limit } = {}) {
+export async function syncDocumentsFromServer(userId = getCurrentUser()?.id) {
+  if (!userId) return [];
+  const rows = await restRequest(`documents?owner_id=eq.${encodeURIComponent(userId)}&select=*&order=created_at.desc&limit=500`);
+  const remote = Array.isArray(rows) ? rows.map(hydrateDocument) : [];
+  const existing = readLocal(DOCUMENTS_KEY, []).filter(document => ownerOf(document) !== userId);
+  saveDocuments([...existing, ...remote]);
+  return remote;
+}
+
+export function listAllDocuments() {
+  return readLocal(DOCUMENTS_KEY, []).sort((a, b) => new Date(b.created_date || b.created_at || 0) - new Date(a.created_date || a.created_at || 0));
+}
+
+export function listDocuments({ userId, limit } = {}) {
   const ownerId = userId || getCurrentUser()?.id;
   if (!ownerId) return [];
-  const safeLimit = Math.max(1, Math.min(Number(limit) || 100, 500));
-  const rows = await restRequest(`documents?owner_id=eq.${encodeURIComponent(ownerId)}&select=*&order=created_at.desc&limit=${safeLimit}`);
-  return Array.isArray(rows) ? rows.map(hydrateDocument) : [];
+  const documents = readLocal(DOCUMENTS_KEY, [])
+    .filter(document => ownerOf(document) === ownerId)
+    .sort((a, b) => new Date(b.created_date || b.created_at || 0) - new Date(a.created_date || a.created_at || 0));
+  return limit ? documents.slice(0, limit) : documents;
 }
 
-export async function createDocument(data, user = getCurrentUser()) {
+export function createDocument(data, user = getCurrentUser()) {
   const now = new Date().toISOString();
   if (!user?.id) {
     const drafts = readLocal(GUEST_DOCUMENTS_KEY, []);
-    const draft = { ...data, id: createLocalId("guest-document"), status: "draft", isGuestDraft: true, created_date: now };
+    const draft = { ...data, id: localUuid("guest-document"), status: "draft", isGuestDraft: true, created_date: now };
     if (writeLocal(GUEST_DOCUMENTS_KEY, [...drafts, draft]) === null) throw new Error("DOCUMENT_SAVE_FAILED");
     return draft;
   }
 
   const claimData = data.claim_data || data.claimData || {};
-  const mode = data.mode || claimData.mode || "solo";
-  const payload = {
+  const modeRaw = data.mode || claimData.mode || "solo";
+  const id = localUuid();
+  const document = {
+    ...data,
+    id,
     owner_id: user.id,
+    ownerUserId: user.id,
+    created_by_id: user.id,
+    created_by: user.email,
     type: normalizeType(data.type || claimData.type),
     subtype: data.subtype || claimData.subtype || "",
-    mode: mode === "individual" ? "solo" : mode,
+    mode: modeRaw === "individual" ? "solo" : modeRaw,
     respondent_name: data.respondent_name || claimData.employer?.name || claimData.respondent?.name || "",
     claim_data: claimData,
+    claimData,
     status: data.status || "ready",
+    created_at: now,
+    created_date: now,
+    createdAt: now,
+    updated_at: now,
   };
+  saveDocuments([...readLocal(DOCUMENTS_KEY, []), document]);
 
-  const rows = await restRequest("documents", { method: "POST", body: payload, prefer: "return=representation" });
-  if (!Array.isArray(rows) || !rows[0]) throw new Error("DOCUMENT_SAVE_FAILED");
-  return hydrateDocument(rows[0]);
+  restRequest("documents", {
+    method: "POST",
+    body: {
+      id,
+      owner_id: user.id,
+      type: document.type,
+      subtype: document.subtype,
+      mode: document.mode,
+      respondent_name: document.respondent_name,
+      claim_data: claimData,
+      status: document.status,
+    },
+    prefer: "return=minimal",
+  }).catch(error => console.error("Supabase document insert failed", error));
+
+  return document;
 }
 
-export async function updateDocument(id, updates) {
+export function updateDocument(id, updates) {
   const user = getCurrentUser();
   if (!user?.id) throw new Error("AUTH_REQUIRED");
-  const payload = dbUpdates(updates);
-  const rows = await restRequest(`documents?id=eq.${encodeURIComponent(id)}&owner_id=eq.${encodeURIComponent(user.id)}`, {
-    method: "PATCH",
-    body: payload,
-    prefer: "return=representation",
+  let updated = null;
+  let found = false;
+  const documents = readLocal(DOCUMENTS_KEY, []).map(document => {
+    if (document.id !== id) return document;
+    found = true;
+    if (ownerOf(document) !== user.id) throw new Error("DOCUMENT_FORBIDDEN");
+    updated = { ...document, ...updates, updated_at: new Date().toISOString(), updated_date: new Date().toISOString() };
+    return updated;
   });
-  if (!Array.isArray(rows) || !rows[0]) throw new Error("DOCUMENT_NOT_FOUND");
-  return hydrateDocument(rows[0]);
+  if (!found) throw new Error("DOCUMENT_NOT_FOUND");
+  saveDocuments(documents);
+
+  restRequest(`documents?id=eq.${encodeURIComponent(id)}&owner_id=eq.${encodeURIComponent(user.id)}`, {
+    method: "PATCH",
+    body: dbUpdates(updates),
+    prefer: "return=minimal",
+  }).catch(error => console.error("Supabase document update failed", error));
+  return updated;
 }
 
-export async function deleteDocument(id) {
+export function deleteDocument(id) {
   const user = getCurrentUser();
   if (!user?.id) {
     const guestDocuments = readLocal(GUEST_DOCUMENTS_KEY, []);
@@ -106,10 +161,15 @@ export async function deleteDocument(id) {
     if (writeLocal(GUEST_DOCUMENTS_KEY, guestDocuments.filter(item => item.id !== id)) === null) throw new Error("DOCUMENT_DELETE_FAILED");
     return guestDocument;
   }
-  const rows = await restRequest(`documents?id=eq.${encodeURIComponent(id)}&owner_id=eq.${encodeURIComponent(user.id)}`, {
+  const documents = readLocal(DOCUMENTS_KEY, []);
+  const document = documents.find(item => item.id === id);
+  if (!document) throw new Error("DOCUMENT_NOT_FOUND");
+  if (ownerOf(document) !== user.id) throw new Error("DOCUMENT_FORBIDDEN");
+  saveDocuments(documents.filter(item => item.id !== id));
+
+  restRequest(`documents?id=eq.${encodeURIComponent(id)}&owner_id=eq.${encodeURIComponent(user.id)}`, {
     method: "DELETE",
-    prefer: "return=representation",
-  });
-  if (!Array.isArray(rows) || !rows[0]) throw new Error("DOCUMENT_NOT_FOUND");
-  return hydrateDocument(rows[0]);
+    prefer: "return=minimal",
+  }).catch(error => console.error("Supabase document delete failed", error));
+  return document;
 }
