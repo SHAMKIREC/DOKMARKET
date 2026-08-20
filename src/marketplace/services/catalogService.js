@@ -1,11 +1,14 @@
 import { publicRestRequest } from "@/lib/supabaseRest";
 
+const STOREFRONT_TYPE = { document:"ready_file", bundle:"bundle", smart_service:"platform_generator", specialist_service:"service", guide:"guide", online_form:"online_form" };
+
 function mapRow(row) {
   if (!row) return null;
   return {
     id: row.id,
     slug: row.slug,
-    type: row.item_type,
+    type: STOREFRONT_TYPE[row.item_type] || row.metadata?.material_type || row.item_type,
+    databaseType: row.item_type,
     title: row.title,
     description: row.short_description || row.description || "",
     longDescription: row.description || row.short_description || "",
@@ -45,7 +48,7 @@ export async function loadPublishedCatalogItem(idOrSlug) {
   try {
     const sellers = await publicRestRequest(`seller_profiles?user_id=eq.${encodeURIComponent(item.providerId)}&verification_status=eq.approved&is_public=eq.true&select=display_name,headline,rating,reviews_count,user_id`);
     const seller = Array.isArray(sellers) ? sellers[0] : null;
-    if (seller) item.seller = seller;
+    if (seller) { item.seller = seller; item.providerName = seller.display_name || item.providerName; }
   } catch {}
   return item;
 }
