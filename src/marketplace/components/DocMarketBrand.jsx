@@ -2,14 +2,13 @@ import { Link } from "react-router-dom";
 import docmarketIcon from "../../assets/docmarket-icon.png";
 
 export function DocMarketBrand() {
-  const content = <>
+  return <Link className="docmarket-brand" to="/" aria-label="ДокМаркет — на главную">
     <img className="docmarket-brand-icon" src={docmarketIcon} alt="" aria-hidden="true" />
     <span className="docmarket-brand-copy">
       <strong><span>Док</span><em>Маркет</em></strong>
       <small>Документы · сервисы · решения</small>
     </span>
-  </>;
-  return <Link className="docmarket-brand" to="/" aria-label="ДокМаркет — на главную">{content}</Link>;
+  </Link>;
 }
 
 export default function DocMarketHeader() {
@@ -18,8 +17,9 @@ export default function DocMarketHeader() {
       <DocMarketBrand />
       <nav className="docmarket-main-nav" aria-label="Навигация ДокМаркета">
         <Link to="/market#directions">Документы</Link>
-        <Link to="/#services">Умные сервисы</Link>
+        <Link to="/#services">Сервисы</Link>
         <Link to="/market#specialists">Специалисты</Link>
+        <Link to="/reviews">Отзывы</Link>
         <Link to="/ForLawyers">Авторам</Link>
       </nav>
       <nav className="docmarket-actions" aria-label="Действия ДокМаркета">
