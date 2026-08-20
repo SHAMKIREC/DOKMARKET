@@ -4,14 +4,14 @@ import * as authService from "@/services/authService";
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => authService.getCurrentUser());
   const [isLoading, setIsLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
 
-  const refreshUser = useCallback(() => {
+  const refreshUser = useCallback(async () => {
     setIsLoading(true);
     try {
-      const currentUser = authService.getCurrentUser();
+      const currentUser = await authService.loadCurrentUser();
       setUser(currentUser);
       setAuthError(null);
       return currentUser;
@@ -26,10 +26,10 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => { refreshUser(); }, [refreshUser]);
 
-  const runAuth = (action) => {
+  const runAuth = async action => {
     setAuthError(null);
     try {
-      const nextUser = action();
+      const nextUser = await action();
       setUser(nextUser);
       return nextUser;
     } catch (error) {
@@ -43,7 +43,10 @@ export const AuthProvider = ({ children }) => {
   const registerLawyer = data => runAuth(() => authService.registerLawyer(data));
   const loginAsDemo = role => runAuth(() => authService.loginAsDemo(role));
   const updateUser = updates => runAuth(() => authService.updateCurrentUser(updates));
-  const logout = () => { authService.logout(); setUser(null); setAuthError(null); };
+  const logout = async () => {
+    try { await authService.logout(); }
+    finally { setUser(null); setAuthError(null); }
+  };
 
   return <AuthContext.Provider value={{
     user,
