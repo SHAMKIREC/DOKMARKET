@@ -1,0 +1,82 @@
+export const platformServices = [
+  {
+    id: "dosudebka",
+    offerId: "dosudebka-service",
+    status: "active",
+    statusLabel: "Работает",
+    icon: "fa-scale-balanced",
+    title: "Досудебка",
+    shortTitle: "Досудебная претензия",
+    description: "Собирает досудебную претензию под вашу ситуацию: трудовой спор, товар, онлайн-курс или долг.",
+    meta: "SOLO и совместная претензия · PDF/DOCX",
+    route: "/dosudebka",
+    actionRoute: "/Generator",
+    basePrice: 800,
+    priceLabel: "от 800 ₽",
+    formats: ["PDF", "DOCX"],
+    capabilities: ["solo", "collective", "evidence", "pdf", "docx"],
+  },
+  {
+    id: "contract",
+    status: "planned",
+    statusLabel: "Скоро",
+    icon: "fa-file-signature",
+    title: "Конструктор договора",
+    shortTitle: "Договор",
+    description: "Ответьте на вопросы — сервис соберёт договор под ваши условия.",
+    meta: "Договоры для частных лиц и бизнеса",
+    route: null,
+    basePrice: null,
+    priceLabel: "Скоро",
+    capabilities: ["guided-form", "docx"],
+  },
+  {
+    id: "debt-route",
+    status: "planned",
+    statusLabel: "Скоро",
+    icon: "fa-hand-holding-dollar",
+    title: "Вернуть долг",
+    shortTitle: "Вернуть долг",
+    description: "Маршрут документов от требования должнику до подготовки следующего шага.",
+    meta: "Расписки · займы · расчёты",
+    route: null,
+    basePrice: null,
+    priceLabel: "Скоро",
+    capabilities: ["guided-route", "calculations", "documents"],
+  },
+  {
+    id: "complaints",
+    status: "planned",
+    statusLabel: "Скоро",
+    icon: "fa-building-shield",
+    title: "Жалобы и обращения",
+    shortTitle: "Жалоба",
+    description: "Подберёт адресата и сформирует обращение по вашей ситуации.",
+    meta: "Ведомства · организации · надзор",
+    route: null,
+    basePrice: null,
+    priceLabel: "Скоро",
+    capabilities: ["guided-form", "recipient-routing", "documents"],
+  },
+];
+
+export const getPlatformService = id => platformServices.find(service => service.id === id) || null;
+export const activePlatformServices = () => platformServices.filter(service => service.status === "active");
+
+export function serviceToCartOffer(service) {
+  if (!service || service.status !== "active" || !Number(service.basePrice)) return null;
+  return {
+    id: service.offerId || `service-${service.id}`,
+    serviceId: service.id,
+    type: "platform_generator",
+    providerType: "platform",
+    providerName: "ДокМаркет",
+    title: service.shortTitle || service.title,
+    description: service.description,
+    price: Number(service.basePrice),
+    priceType: "from",
+    formats: service.formats || [],
+    actionUrl: service.actionRoute || service.route,
+    badge: "Умный сервис",
+  };
+}
