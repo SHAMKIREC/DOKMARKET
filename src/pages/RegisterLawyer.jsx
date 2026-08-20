@@ -12,10 +12,13 @@ export default function RegisterLawyer() {
   const navigate = useNavigate();
   const [form, setForm] = useState(initial);
   const [errors, setErrors] = useState({});
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState("");
 
   function setValue(name, value) {
     setForm(current => ({ ...current, [name]: value }));
     setErrors(current => ({ ...current, [name]: "", form: "" }));
+    setNotice("");
   }
   function validate() {
     const next = {
@@ -32,15 +35,21 @@ export default function RegisterLawyer() {
     setErrors(next);
     return !Object.values(next).some(Boolean);
   }
-  function submit(event) {
+  async function submit(event) {
     event.preventDefault();
     if (!validate()) return;
+    setBusy(true);
+    setNotice("");
     try {
-      registerLawyer({ ...form, email: form.email.trim().toLowerCase() });
+      await registerLawyer({ ...form, email: form.email.trim().toLowerCase() });
       navigate("/BusinessCabinet", { replace: true });
     } catch (error) {
-      setErrors(current => ({ ...current, form: error.message === "EMAIL_EXISTS" ? "Аккаунт с таким email уже существует." : "Не удалось создать кабинет. Проверьте данные." }));
-    }
+      if (error.message === "EMAIL_CONFIRMATION_REQUIRED") {
+        setNotice("Кабинет создан. Подтвердите email по письму от сервиса, затем войдите.");
+      } else {
+        setErrors(current => ({ ...current, form: error.message === "EMAIL_EXISTS" ? "Аккаунт с таким email уже существует." : "Не удалось создать кабинет. Проверьте данные." }));
+      }
+    } finally { setBusy(false); }
   }
 
   return <AuthShell title="Кабинет юриста" subtitle="Регистрация юриста или юридического кабинета">
@@ -52,11 +61,11 @@ export default function RegisterLawyer() {
       <Field name="inn" label="ИНН, необязательно" inputMode="numeric" placeholder="10 или 12 цифр" value={form.inn} error={errors.inn} onChange={(name, value) => setValue(name, value.replace(/\D/g, "").slice(0, 12))} />
       <Field name="password" label="Пароль" type="password" placeholder="Минимум 8 символов" value={form.password} error={errors.password} onChange={setValue} hint="Минимум 8 символов, буквы и цифры." />
       <Field name="confirmPassword" label="Повторите пароль" type="password" placeholder="Повторите пароль" value={form.confirmPassword} error={errors.confirmPassword} onChange={setValue} />
-      {/* TODO: заменить текст согласий ссылками на реальные Privacy/Terms перед запуском. */}
       <Consent checked={form.personalData} onChange={value => setValue("personalData", value)} error={errors.personalData}>Я согласен на обработку персональных данных</Consent>
       <Consent checked={form.lawyerTerms} onChange={value => setValue("lawyerTerms", value)} error={errors.lawyerTerms}>Я принимаю условия сервиса для юристов</Consent>
+      {notice && <p role="status" style={{ color: "#86efac", margin: 0, fontSize: ".8rem", lineHeight: 1.45 }}>{notice}</p>}
       {errors.form && <ErrorText>{errors.form}</ErrorText>}
-      <button style={button}>Создать кабинет</button>
+      <button style={{ ...button, opacity: busy ? .7 : 1 }} disabled={busy}>{busy ? "Создаём…" : "Создать кабинет"}</button>
     </form>
     <Link to="/Login" style={{ color: "#c4b5fd", display: "inline-block", marginTop: 18, fontSize: ".82rem" }}>Вернуться ко входу</Link>
   </AuthShell>;
