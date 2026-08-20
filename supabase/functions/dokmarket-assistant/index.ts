@@ -16,6 +16,54 @@ function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json; charset=utf-8" } });
 }
 
+async function loadPublishedCatalog(req: Request) {
+  const url = Deno.env.get("SUPABASE_URL");
+  const apiKey = Deno.env.get("SUPABASE_ANON_KEY") || (() => {
+    try {
+      const keys = JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "{}");
+      return keys.default || "";
+    } catch {
+      return "";
+    }
+  })();
+  const authorization = req.headers.get("Authorization") || "";
+  if (!url || !apiKey || !authorization) return [];
+
+  const response = await fetch(
+    `${url.replace(/\/$/, "")}/rest/v1/catalog_items?status=eq.published&select=id,slug,item_type,title,short_description,description,category,subcategory,platform_service_id,provider_type,price_rub,price_type,formats,tags,featured,metadata&order=featured.desc,sort_order.asc&limit=60`,
+    {
+      headers: {
+        apikey: apiKey,
+        Authorization: authorization,
+      },
+    },
+  );
+
+  if (!response.ok) {
+    console.error("Catalog load failed", response.status, await response.text());
+    return [];
+  }
+
+  const rows = await response.json();
+  if (!Array.isArray(rows)) return [];
+  return rows.map((item: any) => ({
+    id: String(item?.id || ""),
+    slug: String(item?.slug || ""),
+    title: String(item?.title || ""),
+    type: String(item?.item_type || ""),
+    description: String(item?.short_description || item?.description || "").slice(0, 1000),
+    category: String(item?.category || ""),
+    subcategory: String(item?.subcategory || ""),
+    providerType: String(item?.provider_type || ""),
+    priceRub: Number.isFinite(Number(item?.price_rub)) ? Number(item.price_rub) : null,
+    priceType: String(item?.price_type || ""),
+    formats: Array.isArray(item?.formats) ? item.formats.slice(0, 10) : [],
+    tags: Array.isArray(item?.tags) ? item.tags.slice(0, 20) : [],
+    route: String(item?.metadata?.route || "/market"),
+    actionRoute: String(item?.metadata?.action_route || item?.metadata?.route || "/market"),
+  }));
+}
+
 Deno.serve(async req => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
@@ -27,22 +75,18 @@ Deno.serve(async req => {
     const payload = await req.json();
     const message = String(payload?.message || "").trim().slice(0, 3000);
     const history = Array.isArray(payload?.history) ? payload.history.slice(-8) : [];
-    const catalog = Array.isArray(payload?.catalog) ? payload.catalog.slice(0, 40) : [];
     if (!message) return json({ error: "empty_message" }, 400);
 
     const safeHistory = history.map((item: any) => ({
       role: item?.role === "assistant" ? "assistant" : "user",
       content: String(item?.content || "").slice(0, 1500),
     }));
-    const catalogText = catalog.map((item: any) => ({
-      id: String(item?.id || ""), title: String(item?.title || item?.name || ""),
-      type: String(item?.type || ""), description: String(item?.description || item?.profession || ""),
-    }));
+    const catalog = await loadPublishedCatalog(req);
 
     const input = [
       { role: "system", content: SYSTEM },
       ...safeHistory,
-      { role: "user", content: `Доступный каталог: ${JSON.stringify(catalogText)}\n\nСообщение пользователя: ${message}` },
+      { role: "user", content: `Актуальный опубликованный каталог ДокМаркета из базы: ${JSON.stringify(catalog)}\n\nСообщение пользователя: ${message}` },
     ];
 
     const response = await fetch("https://api.openai.com/v1/responses", {
