@@ -3,6 +3,16 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import docmarketIcon from "../../assets/docmarket-icon.png";
 
+function Icon({ name }) {
+  const common = { width: 19, height: 19, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": true };
+  if (name === "heart") return <svg {...common}><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" /></svg>;
+  if (name === "bag") return <svg {...common}><path d="M6 8h12l1 13H5L6 8Z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg>;
+  if (name === "user") return <svg {...common}><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>;
+  if (name === "store") return <svg {...common}><path d="M3 10h18"/><path d="M5 10v10h14V10"/><path d="m4 4-1 6h18l-1-6H4Z"/><path d="M9 14h6v6H9z"/></svg>;
+  if (name === "close") return <svg {...common}><path d="M6 6l12 12M18 6 6 18"/></svg>;
+  return <svg {...common}><path d="M4 7h16M4 12h16M4 17h16"/></svg>;
+}
+
 export function DocMarketBrand() {
   return <Link className="docmarket-brand" to="/" aria-label="ДокМаркет — на главную">
     <img className="docmarket-brand-icon" src={docmarketIcon} alt="" aria-hidden="true" />
@@ -20,23 +30,23 @@ export default function DocMarketHeader() {
       <DocMarketBrand />
       <nav className="docmarket-main-nav" aria-label="Навигация ДокМаркета">
         <Link to="/market" onClick={close}>Каталог</Link>
-        <Link to="/market#specialists" onClick={close}>Продавцы</Link>
+        <Link to="/#verified-sellers" onClick={close}>Продавцы</Link>
         <Link to="/reviews" onClick={close}>Отзывы</Link>
         <Link to="/ForLawyers" onClick={close}>Стать продавцом</Link>
       </nav>
       <nav className="docmarket-actions" aria-label="Действия ДокМаркета">
-        <Link to="/market/favorites" title="Избранное" aria-label="Избранное"><i className="fa-regular fa-heart" /><span>Избранное</span></Link>
-        <Link to="/market/cart" title="Корзина" aria-label="Корзина"><i className="fa-solid fa-bag-shopping" /><span>Корзина</span></Link>
-        <Link to={user ? "/Dashboard" : "/Login"} title={user ? "Кабинет" : "Войти"} aria-label={user ? "Кабинет" : "Войти"}><i className="fa-regular fa-user" /><span>{user ? "Кабинет" : "Войти"}</span></Link>
-        <button className="docmarket-menu-button" type="button" aria-label={menuOpen ? "Закрыть меню" : "Открыть меню"} aria-expanded={menuOpen} onClick={() => setMenuOpen(v => !v)}><i className={`fa-solid ${menuOpen ? "fa-xmark" : "fa-bars"}`} /></button>
+        <Link to="/market/favorites" title="Избранное" aria-label="Избранное"><Icon name="heart"/><span>Избранное</span></Link>
+        <Link to="/market/cart" title="Корзина" aria-label="Корзина"><Icon name="bag"/><span>Корзина</span></Link>
+        <Link to={user ? "/Dashboard" : "/Login"} title={user ? "Кабинет" : "Войти"} aria-label={user ? "Кабинет" : "Войти"}><Icon name="user"/><span>{user ? "Кабинет" : "Войти"}</span></Link>
+        <button className="docmarket-menu-button" type="button" aria-label={menuOpen ? "Закрыть меню" : "Открыть меню"} aria-expanded={menuOpen} onClick={() => setMenuOpen(v => !v)}><Icon name={menuOpen ? "close" : "menu"}/></button>
       </nav>
     </div>
     {menuOpen && <div className="docmarket-mobile-menu">
-      <Link to="/market" onClick={close}><i className="fa-solid fa-store" />Каталог документов</Link>
-      <Link to="/market/favorites" onClick={close}><i className="fa-regular fa-heart" />Избранное</Link>
-      <Link to="/market/cart" onClick={close}><i className="fa-solid fa-bag-shopping" />Корзина</Link>
-      <Link to={user ? "/Dashboard" : "/Login"} onClick={close}><i className="fa-regular fa-user" />{user ? "Личный кабинет" : "Войти"}</Link>
-      <Link to="/ForLawyers" onClick={close}><i className="fa-solid fa-shop" />Стать продавцом</Link>
+      <Link to="/market" onClick={close}><Icon name="store"/>Каталог документов</Link>
+      <Link to="/market/favorites" onClick={close}><Icon name="heart"/>Избранное</Link>
+      <Link to="/market/cart" onClick={close}><Icon name="bag"/>Корзина</Link>
+      <Link to={user ? "/Dashboard" : "/Login"} onClick={close}><Icon name="user"/>{user ? "Личный кабинет" : "Войти"}</Link>
+      <Link to="/ForLawyers" onClick={close}><Icon name="store"/>Стать продавцом</Link>
     </div>}
   </header>;
 }
