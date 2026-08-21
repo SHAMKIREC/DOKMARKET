@@ -3,84 +3,18 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { createPlatformReview, listApprovedPlatformReviews } from "@/marketplace/services/platformReviewsService";
 import { MarketFrame, MarketNavigation } from "./Market";
-
-function Stars({ value }) {
-  return <span aria-label={`${value} из 5`} style={{ color: "#facc15", letterSpacing: 2, fontSize: "1rem" }}>{[1,2,3,4,5].map(star => <span key={star}>{star <= value ? "★" : "☆"}</span>)}</span>;
-}
-
+function Stars({ value }) {return <span aria-label={`${value} из 5`} className="dm-stars">{[1,2,3,4,5].map(star => <span key={star}>{star <= value ? "★" : "☆"}</span>)}</span>}
 export default function PlatformReviews() {
   const { user } = useAuth();
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [rating, setRating] = useState(5);
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
-  const [status, setStatus] = useState("");
+  const [reviews, setReviews] = useState([]);const [loading, setLoading] = useState(true);const [rating, setRating] = useState(5);const [title, setTitle] = useState("");const [body, setBody] = useState("");const [status, setStatus] = useState("");
   const average = useMemo(() => reviews.length ? (reviews.reduce((sum, item) => sum + Number(item.rating || 0), 0) / reviews.length).toFixed(1) : null, [reviews]);
-
-  useEffect(() => {
-    let mounted = true;
-    listApprovedPlatformReviews().then(data => mounted && setReviews(Array.isArray(data) ? data : [])).catch(() => {}).finally(() => mounted && setLoading(false));
-    return () => { mounted = false; };
-  }, []);
-
-  async function submit(event) {
-    event.preventDefault();
-    if (!user) return setStatus("Чтобы оставить отзыв, войдите в аккаунт.");
-    if (body.trim().length < 10) return setStatus("Напишите немного подробнее о своём опыте.");
-    try {
-      setStatus("Отправляем отзыв…");
-      await createPlatformReview({ userId: user.id, authorName: user.fullName || user.name || user.email?.split("@")[0], rating, title, body });
-      setTitle("");
-      setBody("");
-      setRating(5);
-      setStatus("Спасибо. Отзыв сохранён и появится после модерации.");
-    } catch {
-      setStatus("Не удалось отправить отзыв. Попробуйте ещё раз.");
-    }
-  }
-
-  return <MarketFrame>
-    <style>{`
-      .dm-review-compact{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(300px,.7fr);gap:18px;align-items:start}
-      .dm-review-form-compact{display:grid;gap:12px;padding:20px!important}
-      .dm-review-form-compact label{display:grid;gap:7px;color:#cbd5e1;font-size:.8rem;font-weight:700}
-      .dm-review-form-compact input,.dm-review-form-compact textarea{width:100%;box-sizing:border-box;border:1px solid rgba(148,163,184,.17);border-radius:12px;background:rgba(2,6,23,.48);color:#fff;padding:11px 12px;outline:none;font:inherit}
-      .dm-review-form-compact textarea{resize:vertical;min-height:112px}
-      .dm-rating-text{display:flex;gap:5px}.dm-rating-text button{width:42px;height:42px;border:1px solid rgba(148,163,184,.14);border-radius:11px;background:rgba(255,255,255,.025);color:#64748b;font-size:1.35rem;line-height:1;cursor:pointer}.dm-rating-text button.active{color:#facc15;border-color:rgba(250,204,21,.28);background:rgba(250,204,21,.06)}
-      @media(max-width:760px){.dm-review-compact{grid-template-columns:1fr}.dm-reviews-hero{padding:18px!important}.dm-review-form-compact{padding:16px!important}.dm-rating-text button{width:40px;height:40px}.dm-review-card{min-height:0!important;padding:16px!important}}
-    `}</style>
-    <MarketNavigation crumbs={[{ label:"ДокМаркет", to:"/" }, { label:"Отзывы" }]} backTo="/" />
-
-    <section className="market-hero market-glass dm-reviews-hero">
-      <div>
-        <span className="market-kicker">Отзывы о ДокМаркете</span>
-        <h1 className="market-title">Отзывы покупателей</h1>
-        <p className="market-subtitle">Отзывы о платформе публикуются после модерации. Отзывы о документах и специалистах будут привязаны к конкретным заказам.</p>
-      </div>
-      <div className="dm-review-score"><strong>{average || "—"}</strong><span>{reviews.length ? `${reviews.length} отзывов` : "Пока нет опубликованных отзывов"}</span></div>
-    </section>
-
-    <section className="dm-review-compact">
-      <div>
-        <h2 className="market-heading">Что пишут пользователи</h2>
-        <p className="market-lead">Без вымышленных оценок и профилей.</p>
-        {loading ? <div className="market-empty market-glass">Загружаем отзывы…</div> : reviews.length ? <div className="dm-review-grid">{reviews.map(review => <article className="market-card market-glass dm-review-card" key={review.id}>
-          <Stars value={Number(review.rating || 0)} />
-          {review.title && <h2>{review.title}</h2>}
-          <p>{review.body}</p>
-          <small>{review.author_name || "Пользователь ДокМаркета"}</small>
-        </article>)}</div> : <div className="market-empty market-glass"><h2>Пока отзывов нет</h2><p>Первый настоящий отзыв появится после использования платформы и модерации.</p></div>}
-      </div>
-
-      <form className="market-panel market-glass dm-review-form-compact" onSubmit={submit}>
-        <div><span className="market-kicker">Оставить отзыв</span><h2 className="market-heading" style={{fontSize:"1.35rem"}}>Оцените ДокМаркет</h2></div>
-        <label>Оценка<div className="dm-rating-text">{[1,2,3,4,5].map(value => <button className={value <= rating ? "active" : ""} type="button" key={value} aria-label={`${value} из 5`} onClick={() => setRating(value)}>★</button>)}</div></label>
-        <label>Заголовок<input value={title} onChange={event => setTitle(event.target.value)} maxLength={100} placeholder="Например: быстро нашёл нужный документ" /></label>
-        <label>Отзыв<textarea value={body} onChange={event => setBody(event.target.value)} maxLength={2000} rows={4} placeholder="Что было удобно? Что стоит улучшить?" /></label>
-        {user ? <button className="market-primary" type="submit">Отправить отзыв</button> : <Link className="market-primary" to="/Login">Войти и оставить отзыв</Link>}
-        {status && <p className="dm-review-status">{status}</p>}
-      </form>
-    </section>
+  useEffect(() => {let mounted=true;listApprovedPlatformReviews().then(data=>mounted&&setReviews(Array.isArray(data)?data:[])).catch(()=>{}).finally(()=>mounted&&setLoading(false));return()=>{mounted=false}}, []);
+  async function submit(event){event.preventDefault();if(!user)return setStatus("Чтобы оставить отзыв, войдите в аккаунт.");if(body.trim().length<10)return setStatus("Напишите немного подробнее о своём опыте.");try{setStatus("Отправляем отзыв…");await createPlatformReview({ userId:user.id,authorName:user.fullName||user.name||user.email?.split("@")[0],rating,title,body });setTitle("");setBody("");setRating(5);setStatus("Спасибо. Отзыв сохранён и появится после модерации.")}catch{setStatus("Не удалось отправить отзыв. Попробуйте ещё раз.")}}
+  return <MarketFrame><style>{styles}</style><MarketNavigation crumbs={[{label:"ДокМаркет",to:"/"},{label:"Отзывы"}]} backTo="/" />
+    <section className="dm-reviews-hero"><div><span>ОТЗЫВЫ ДОКМАРКЕТА</span><h1>Отзывы без смешивания</h1><p>Отзывы о платформе — здесь. Отзывы о конкретном документе показываются на карточке документа, а отзывы о специалисте — в его профиле.</p></div><div className="dm-review-score"><strong>{average||"—"}</strong><Stars value={Math.round(Number(average||0))}/><span>{reviews.length?`${reviews.length} опубликованных`:`Пока нет опубликованных`}</span></div></section>
+    <section className="dm-review-types"><article><b>Документы</b><p>Оценка и отзыв привязываются к конкретному товару.</p><Link to="/market">Открыть каталог →</Link></article><article><b>Специалисты</b><p>Отзывы отображаются в профиле исполнителя рядом с рейтингом.</p><Link to="/#verified-sellers">Найти специалиста →</Link></article><article className="active"><b>ДокМаркет</b><p>Общий опыт использования приложения и сервисов платформы.</p><span>Вы здесь</span></article></section>
+    <section className="dm-review-layout"><div><div className="dm-section-title"><div><span>ПУБЛИЧНЫЕ ОТЗЫВЫ</span><h2>Что пишут пользователи</h2></div></div>{loading?<div className="dm-empty">Загружаем отзывы…</div>:reviews.length?<div className="dm-review-grid">{reviews.map(review=><article className="dm-review-card" key={review.id}><div className="dm-review-card-top"><Stars value={Number(review.rating||0)}/><span>Проверено модерацией</span></div>{review.title&&<h3>{review.title}</h3>}<p>{review.body}</p><small>{review.author_name||"Пользователь ДокМаркета"}</small></article>)}</div>:<div className="dm-empty"><b>Пока отзывов нет</b><p>Здесь появятся только реальные опубликованные отзывы после модерации.</p></div>}</div>
+      <form className="dm-review-form" onSubmit={submit}><div><span>ОСТАВИТЬ ОТЗЫВ</span><h2>Оцените ДокМаркет</h2><p>Для документа или специалиста отзыв лучше оставить на их собственной странице.</p></div><label>Оценка<div className="dm-rating-buttons">{[1,2,3,4,5].map(value=><button className={value<=rating?"active":""} type="button" key={value} onClick={()=>setRating(value)} aria-label={`${value} из 5`}>★</button>)}</div></label><label>Заголовок<input value={title} onChange={e=>setTitle(e.target.value)} maxLength={100} placeholder="Например: быстро нашёл нужный документ"/></label><label>Отзыв<textarea value={body} onChange={e=>setBody(e.target.value)} maxLength={2000} rows={4} placeholder="Что было удобно? Что стоит улучшить?"/></label>{user?<button className="dm-submit-review" type="submit">Отправить на модерацию</button>:<Link className="dm-submit-review" to="/Login">Войти и оставить отзыв</Link>}{status&&<p className="dm-review-status">{status}</p>}</form></section>
   </MarketFrame>;
 }
+const styles=`.dm-stars{color:#ffb02e;letter-spacing:1px;font-size:.9rem}.dm-reviews-hero{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;padding:22px;border-radius:19px;border:1px solid #20384a;background:radial-gradient(circle at 90% 0%,rgba(255,159,28,.09),transparent 18rem),#0d1b29;margin-bottom:12px}.dm-reviews-hero>div>span,.dm-section-title span,.dm-review-form>div>span{color:#ff9f1c;font-size:.64rem;font-weight:900;letter-spacing:.09em}.dm-reviews-hero h1{margin:6px 0 7px;color:#fff;font-size:1.6rem}.dm-reviews-hero p,.dm-review-form>div>p{margin:0;color:#8fa0b2;font-size:.78rem;line-height:1.5;max-width:680px}.dm-review-score{min-width:150px;padding:14px;border-radius:14px;border:1px solid #3d3422;background:#17130d;display:grid;justify-items:center;gap:4px}.dm-review-score strong{font-size:2rem;color:#fff}.dm-review-score>span{color:#8f9ca9;font-size:.64rem}.dm-review-types{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px}.dm-review-types article{padding:13px;border-radius:14px;border:1px solid #20384a;background:#0d1b29;display:grid;gap:5px}.dm-review-types article.active{border-color:#5a4323;background:#17130d}.dm-review-types b{color:#fff;font-size:.82rem}.dm-review-types p{margin:0;color:#7f90a3;font-size:.68rem;line-height:1.4}.dm-review-types a,.dm-review-types span{color:#ffad42;text-decoration:none;font-size:.65rem;font-weight:850;margin-top:4px}.dm-review-layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(290px,.75fr);gap:14px;align-items:start}.dm-section-title h2,.dm-review-form h2{margin:4px 0 0;color:#fff;font-size:1.15rem}.dm-section-title{margin-bottom:10px}.dm-review-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.dm-review-card,.dm-empty,.dm-review-form{border:1px solid #20384a;background:#0d1b29;border-radius:15px}.dm-review-card{padding:14px}.dm-review-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px}.dm-review-card-top>span:last-child{color:#6d7f92;font-size:.58rem}.dm-review-card h3{margin:10px 0 5px;color:#fff;font-size:.88rem}.dm-review-card p{margin:0;color:#9aa9b8;font-size:.73rem;line-height:1.5}.dm-review-card small{display:block;margin-top:10px;color:#65778a;font-size:.64rem}.dm-empty{padding:22px;text-align:center;color:#7f90a3}.dm-empty b{color:#dfe7ef}.dm-empty p{font-size:.72rem}.dm-review-form{padding:16px;display:grid;gap:11px;position:sticky;top:86px}.dm-review-form label{display:grid;gap:6px;color:#cbd5e1;font-size:.72rem;font-weight:750}.dm-review-form input,.dm-review-form textarea{width:100%;box-sizing:border-box;border:1px solid #294052;border-radius:10px;background:#091521;color:#fff;padding:10px 11px;outline:none;font:inherit}.dm-review-form input:focus,.dm-review-form textarea:focus{border-color:#ff9f1c}.dm-rating-buttons{display:flex;gap:5px}.dm-rating-buttons button{width:38px;height:38px;border:1px solid #294052;border-radius:9px;background:#091521;color:#536476;font-size:1.15rem}.dm-rating-buttons button.active{color:#ffb02e;border-color:#745321;background:#21180d}.dm-submit-review{min-height:43px;border:0;border-radius:10px;background:#ff9f1c;color:#07111d;text-decoration:none;font-weight:900;display:grid;place-items:center;font-size:.75rem}.dm-review-status{margin:0;color:#ffbd69;font-size:.68rem;line-height:1.45}@media(max-width:760px){.dm-reviews-hero{grid-template-columns:1fr;padding:15px}.dm-review-score{grid-template-columns:auto auto 1fr;align-items:center;justify-items:start}.dm-review-score strong{font-size:1.5rem}.dm-review-types{grid-template-columns:1fr}.dm-review-layout{grid-template-columns:1fr}.dm-review-grid{grid-template-columns:1fr}.dm-review-form{position:static;padding:14px}.dm-reviews-hero h1{font-size:1.3rem}}`;
