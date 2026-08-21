@@ -6,29 +6,31 @@ const nrvContacts = [
   ["MAX", "https://max.ru/u/f9LHodD0cOJGhA6Iqydw0l5vyUcc1UB4Nga5i6hchfiD9IkzOYkbDUiR9jg"],
   ["VK", "https://vk.ru/zeleny_kontrakt"],
 ];
+function Icon({type}){const p={viewBox:"0 0 24 24",width:22,height:22,fill:"none",stroke:"currentColor",strokeWidth:2,strokeLinecap:"round",strokeLinejoin:"round","aria-hidden":true};const paths={build:<><path d="M4 20h16M7 20V9l5-5 5 5v11"/><path d="M10 20v-6h4v6"/></>,code:<><path d="m8 9-4 3 4 3M16 9l4 3-4 3M14 5l-4 14"/></>,docs:<><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v5h5M9 12h7M9 16h6"/></>};return <svg {...p}>{paths[type]}</svg>}
 
 export default function Partners(){
   return <main className="dm-partners-page">
-    <section className="dm-partners-hero">
-      <span>ПАРТНЁРЫ ДОКМАРКЕТА</span>
-      <h1>Сервисы и команды внутри экосистемы</h1>
-      <p>ДокМаркет объединяет собственные сервисы и партнёрские направления, которые помогают создавать, автоматизировать и применять документы в реальной работе.</p>
-    </section>
+    <div className="dm-partners-shell">
+      <section className="dm-partners-head"><div><span>ЭКОСИСТЕМА ДОКМАРКЕТА</span><h1>Партнёры</h1><p>Команды и сервисы, которые помогают ДокМаркету автоматизировать реальные рабочие процессы.</p></div><Link to="/">На главную</Link></section>
 
-    <section className="dm-partner-grid">
-      <article className="dm-partner-card rb">
-        <div className="dm-partner-mark">РБ</div>
-        <div><span className="dm-partner-type">СТРОИТЕЛЬНЫЙ ПАРТНЁР</span><h2>Решаем Быстро</h2><p>Строительные и ремонтные работы, а также практическая база для направления строительной документации.</p><div className="dm-partner-actions"><a href="https://www.rb-24.ru/" target="_blank" rel="noreferrer">Открыть сайт</a><Link to="/construction-docs">Строительная документация</Link></div></div>
-      </article>
+      <section className="dm-partner-grid">
+        <article className="dm-partner-card rb">
+          <div className="dm-partner-icon"><Icon type="build"/></div>
+          <div className="dm-partner-copy"><span>СТРОИТЕЛЬНЫЙ ПАРТНЁР</span><h2>Решаем Быстро</h2><p>Практическая строительная база и партнёр направления строительной документации.</p><div className="dm-partner-tags"><b>Ремонт</b><b>Строительство</b><b>Документация</b></div><div className="dm-partner-actions"><Link className="primary" to="/construction-docs"><Icon type="docs"/>Строительная документация</Link><a href="https://www.rb-24.ru/" target="_blank" rel="noreferrer">Сайт партнёра</a></div></div>
+        </article>
 
-      <article className="dm-partner-card nrv">
-        <div className="dm-partner-mark">NRV</div>
-        <div><span className="dm-partner-type">ТЕХНОЛОГИЧЕСКИЙ ПАРТНЁР</span><h2>NRV DIGITAL</h2><p>Разработка сайтов, каталогов, калькуляторов, веб-приложений и автоматизация цифровых процессов.</p><div className="dm-contact-row">{nrvContacts.map(([label,href])=><a key={label} href={href} target="_blank" rel="noreferrer">{label}</a>)}</div></div>
-      </article>
-    </section>
+        <article className="dm-partner-card nrv">
+          <div className="dm-partner-icon"><Icon type="code"/></div>
+          <div className="dm-partner-copy"><span>ТЕХНОЛОГИЧЕСКИЙ ПАРТНЁР</span><h2>NRV DIGITAL</h2><p>Разработка веб-продуктов, автоматизация, интерфейсы, каталоги и цифровые сервисы.</p><div className="dm-partner-tags"><b>Web</b><b>Автоматизация</b><b>AI</b></div><div className="dm-contact-row">{nrvContacts.map(([label,href])=><a key={label} href={href} target="_blank" rel="noreferrer">{label}</a>)}</div></div>
+        </article>
+      </section>
+
+      <section className="dm-partner-note"><strong>Партнёр ≠ селлер</strong><p>Селлеры продают документы и услуги через маркетплейс. Партнёры развивают отдельные направления и сервисы внутри экосистемы ДокМаркета.</p><Link to="/seller">Стать селлером →</Link></section>
+    </div>
 
     <style>{`
-      .dm-partners-page{min-height:100vh;padding:34px 16px 82px;background:radial-gradient(circle at 10% 0%,rgba(255,159,28,.09),transparent 28rem),radial-gradient(circle at 90% 15%,rgba(37,201,232,.06),transparent 25rem),#07111d;color:#f8fafc}.dm-partners-hero,.dm-partner-grid{width:min(1040px,100%);margin:auto}.dm-partners-hero{padding:clamp(22px,5vw,40px);border-radius:24px;border:1px solid #263d4f;background:#0d1b29}.dm-partners-hero>span,.dm-partner-type{color:#ffad42;font-size:.69rem;font-weight:900;letter-spacing:.11em}.dm-partners-hero h1{margin:11px 0 10px;font:850 clamp(2rem,7vw,3.5rem)/1.04 'Space Grotesk',sans-serif;letter-spacing:-.04em}.dm-partners-hero p{max-width:780px;margin:0;color:#95a5b8;line-height:1.6}.dm-partner-grid{display:grid;gap:14px;margin-top:16px}.dm-partner-card{display:grid;grid-template-columns:90px 1fr;gap:18px;padding:20px;border-radius:20px;border:1px solid #243c4f;background:#0c1926}.dm-partner-card.rb{border-color:#5a3d1d}.dm-partner-card.nrv{border-color:#314454}.dm-partner-mark{width:82px;height:82px;border-radius:19px;display:grid;place-items:center;font-weight:950;background:#172536;border:1px solid #32485b;color:#fff}.dm-partner-card.rb .dm-partner-mark{background:#20170c;border-color:#65451d;color:#ffad42}.dm-partner-card.nrv .dm-partner-mark{color:#ff9f1c}.dm-partner-card h2{margin:5px 0 6px;font-size:1.35rem}.dm-partner-card p{margin:0;color:#8f9fb2;line-height:1.55;font-size:.84rem}.dm-partner-actions,.dm-contact-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.dm-partner-actions a,.dm-contact-row a{padding:9px 11px;border-radius:10px;border:1px solid #31485b;color:#dfe7ef;text-decoration:none;font-size:.75rem;font-weight:800}.dm-partner-actions a:first-child{background:#ff9f1c;color:#07111d;border-color:#ff9f1c}.dm-contact-row a:hover,.dm-partner-actions a:hover{border-color:#ff9f1c}@media(max-width:600px){.dm-partners-page{padding:18px 12px 72px}.dm-partner-card{grid-template-columns:1fr}.dm-partner-mark{width:64px;height:64px;border-radius:15px}}
+      .dm-partners-page{min-height:100vh;padding:22px 14px 82px;background:#07111d;color:#f8fafc}.dm-partners-shell{width:min(1040px,100%);margin:auto}.dm-partners-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;padding:18px 0 15px;border-bottom:1px solid #1c3142}.dm-partners-head>div>span,.dm-partner-copy>span{color:#ff9f1c;font-size:.65rem;font-weight:900;letter-spacing:.1em}.dm-partners-head h1{margin:5px 0 6px;font:850 clamp(1.8rem,6vw,2.7rem)/1 'Space Grotesk',sans-serif}.dm-partners-head p{margin:0;max-width:680px;color:#8fa0b2;font-size:.82rem;line-height:1.5}.dm-partners-head>a{padding:9px 12px;border:1px solid #2c4354;border-radius:10px;color:#d9e2eb;text-decoration:none;font-size:.72rem;font-weight:800}.dm-partner-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:15px}.dm-partner-card{padding:16px;border-radius:17px;border:1px solid #22394b;background:#0d1b29;display:grid;grid-template-columns:54px 1fr;gap:12px}.dm-partner-card.rb{border-color:#5b4223}.dm-partner-icon{width:54px;height:54px;border-radius:14px;background:#142636;color:#ff9f1c;display:grid;place-items:center}.dm-partner-card.rb .dm-partner-icon{background:#21180d}.dm-partner-copy h2{margin:5px 0 6px;font-size:1.15rem}.dm-partner-copy p{margin:0;color:#8798aa;font-size:.75rem;line-height:1.5}.dm-partner-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}.dm-partner-tags b{padding:4px 7px;border-radius:999px;background:#101f2d;border:1px solid #243b4d;color:#9cacbc;font-size:.58rem}.dm-partner-actions,.dm-contact-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.dm-partner-actions a,.dm-contact-row a{min-height:38px;padding:0 10px;border-radius:9px;border:1px solid #30485a;color:#dfe7ef;text-decoration:none;font-size:.68rem;font-weight:850;display:inline-flex;align-items:center;gap:6px}.dm-partner-actions .primary{background:#ff9f1c;color:#07111d;border-color:#ff9f1c}.dm-contact-row a{color:#ffb65f}.dm-partner-note{margin-top:11px;padding:14px 16px;border:1px solid #22394a;border-radius:15px;background:#0a1723;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px}.dm-partner-note strong{color:#ffad42;font-size:.76rem}.dm-partner-note p{margin:0;color:#8495a8;font-size:.72rem;line-height:1.45}.dm-partner-note a{color:#ffad42;text-decoration:none;font-size:.7rem;font-weight:850;white-space:nowrap}
+      @media(max-width:760px){.dm-partners-page{padding:12px 10px 78px}.dm-partners-head{align-items:flex-start}.dm-partners-head>a{display:none}.dm-partner-grid{grid-template-columns:1fr}.dm-partner-card{padding:13px;grid-template-columns:46px 1fr}.dm-partner-icon{width:46px;height:46px;border-radius:12px}.dm-partner-copy h2{font-size:1rem}.dm-partner-note{grid-template-columns:1fr}.dm-partner-note a{justify-self:start}}
     `}</style>
   </main>
 }
