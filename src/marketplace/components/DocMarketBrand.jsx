@@ -31,10 +31,10 @@ export default function DocMarketHeader() {
       <DocMarketBrand />
       <nav className="docmarket-main-nav" aria-label="Навигация ДокМаркета">
         <Link to="/market" onClick={close}>Каталог</Link>
-        <Link to="/#verified-sellers" onClick={close}>Селлеры</Link>
+        <Link to="/#verified-sellers" onClick={close}>Специалисты</Link>
         <Link to="/partners" onClick={close}>Партнёры</Link>
         <Link to="/reviews" onClick={close}>Отзывы</Link>
-        <Link to="/seller" onClick={close}>Селлер</Link>
+        <Link to="/seller" onClick={close}>Стать селлером</Link>
       </nav>
       <nav className="docmarket-actions" aria-label="Действия ДокМаркета">
         <Link to="/market/favorites" title="Избранное" aria-label="Избранное"><Icon name="heart"/><span>Избранное</span></Link>
@@ -48,7 +48,7 @@ export default function DocMarketHeader() {
       <Link to="/market/favorites" onClick={close}><Icon name="heart"/>Избранное</Link>
       <Link to="/market/cart" onClick={close}><Icon name="bag"/>Корзина</Link>
       <Link to={user ? "/Dashboard" : "/Login"} onClick={close}><Icon name="user"/>{user ? "Личный кабинет" : "Войти"}</Link>
-      <Link to="/seller" onClick={close}><Icon name="store"/>Селлер</Link>
+      <Link to="/seller" onClick={close}><Icon name="store"/>Стать селлером</Link>
       <Link to="/partners" onClick={close}><Icon name="users"/>Партнёры</Link>
       <Link to="/construction-docs" onClick={close}><Icon name="store"/>Строительная документация</Link>
     </div>}
