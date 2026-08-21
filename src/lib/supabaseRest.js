@@ -1,5 +1,7 @@
-const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL || "https://yjmfnjulpqpkndcfcuet.supabase.co").replace(/\/$/, "");
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlqbWZuanVscHFwa25kY2ZjdWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwODY0ODksImV4cCI6MjA2MjYyNDg5fQ.BbR-LWjcO6IeHrfhzSrMpJ_iqOaUBkcNW3Uo7zLu9DA";
+const DOKMARKET_SUPABASE_URL = "https://yjmfnjulpqpkndcfcuet.supabase.co";
+const DOKMARKET_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlqbWZuanVscHFwa25kY2ZjdWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwODY0ODksImV4cCI6MjA2MjYyNDg5fQ.BbR-LWjcO6IeHrfhzSrMpJ_iqOaUBkcNW3Uo7zLu9DA";
+const SUPABASE_URL = (import.meta.env.VITE_DOKMARKET_SUPABASE_URL || DOKMARKET_SUPABASE_URL).replace(/\/$/, "");
+const SUPABASE_ANON_KEY = import.meta.env.VITE_DOKMARKET_SUPABASE_ANON_KEY || DOKMARKET_ANON_KEY;
 
 const SESSION_KEY = "dokmarket:supabase-session";
 
