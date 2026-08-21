@@ -18,6 +18,8 @@ import Forbidden from './pages/Forbidden';
 import Market from './pages/Market';
 import PlatformHome from './pages/PlatformHome';
 import PlatformReviews from './pages/PlatformReviews';
+import Partners from './pages/Partners';
+import ConstructionDocs from './pages/ConstructionDocs';
 import CatalogOfferRouter from './pages/CatalogOfferRouter';
 import MarketOfferDemo from './pages/MarketOfferDemo';
 import MarketSpecialist from './pages/MarketSpecialist';
@@ -49,6 +51,8 @@ const AuthenticatedApp = () => (
     <Route path="/" element={<LayoutWrapper currentPageName="Market"><PlatformHome /></LayoutWrapper>} />
     <Route path="/market" element={<LayoutWrapper currentPageName="Market"><Market /></LayoutWrapper>} />
     <Route path="/reviews" element={<LayoutWrapper currentPageName="Reviews"><PlatformReviews /></LayoutWrapper>} />
+    <Route path="/partners" element={<LayoutWrapper currentPageName="Partners"><Partners /></LayoutWrapper>} />
+    <Route path="/construction-docs" element={<LayoutWrapper currentPageName="ConstructionDocs"><ConstructionDocs /></LayoutWrapper>} />
     <Route path="/dosudebka" element={<LayoutWrapper currentPageName="Dosudebka"><DosudebkaHome /></LayoutWrapper>} />
     {Object.entries(Pages).filter(([path]) => !protectedPages.has(path) && path !== 'Home').map(([path, Page]) => <Route key={path} path={`/${path}`} element={<LayoutWrapper currentPageName={path}><Page /></LayoutWrapper>} />)}
     {Object.entries(Pages).filter(([path]) => protectedPages.has(path)).map(([path, Page]) => <Route key={path} path={`/${path}`} element={<ProtectedRoute allowedRoles={['user', 'lawyer']}><LayoutWrapper currentPageName={path}><Page /></LayoutWrapper></ProtectedRoute>} />)}
@@ -59,7 +63,8 @@ const AuthenticatedApp = () => (
     <Route path="/terms" element={<LayoutWrapper currentPageName="Terms"><LegalDocument type="terms" /></LayoutWrapper>} />
     <Route path="/Forbidden" element={<LayoutWrapper currentPageName="Forbidden"><Forbidden /></LayoutWrapper>} />
     <Route path="/join/:roomId" element={<LayoutWrapper currentPageName="JoinRoom"><JoinRoom /></LayoutWrapper>} />
-    <Route path="/ForLawyers" element={<LayoutWrapper currentPageName="ForLawyers"><ForLawyers /></LayoutWrapper>} />
+    <Route path="/seller" element={<LayoutWrapper currentPageName="Seller"><ForLawyers /></LayoutWrapper>} />
+    <Route path="/ForLawyers" element={<LayoutWrapper currentPageName="Seller"><ForLawyers /></LayoutWrapper>} />
     <Route path="/BusinessCabinet" element={<ProtectedRoute allowedRoles={['lawyer']}><LayoutWrapper currentPageName="BusinessCabinet"><SellerCabinet /></LayoutWrapper></ProtectedRoute>} />
     <Route path="/market/offer/:offerId" element={<LayoutWrapper currentPageName="Market"><CatalogOfferRouter /></LayoutWrapper>} />
     <Route path="/market/demo/:offerId" element={<LayoutWrapper currentPageName="Market"><MarketOfferDemo /></LayoutWrapper>} />
