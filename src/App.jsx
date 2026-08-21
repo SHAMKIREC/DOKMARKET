@@ -36,6 +36,7 @@ import SpecialistServiceNew from './pages/SpecialistServiceNew';
 import DocMarketAssistant from './marketplace/components/DocMarketAssistant';
 import './styles/unified-docmarket-theme.css';
 import './styles/app-shell-overrides.css';
+import './styles/dosudebka-native.css';
 import './styles/mobile-hotfix.css';
 
 const { Pages, Layout } = pagesConfig;
