@@ -1,25 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { offers, specialists } from "@/data/marketplaceMock";
+import { loadPublishedCatalog } from "@/marketplace/services/catalogService";
+import { listPublicSellers } from "@/marketplace/services/sellerProfileService";
 import { listFavorites, removeFavorite } from "@/marketplace/services/favoritesService";
 import { MarketFrame, MarketNavigation, OffersGrid } from "./Market";
 
-export default function MarketFavorites() {
-  const [favorites, setFavorites] = useState(listFavorites);
-  const favoriteOffers = favorites.filter(item => item.type === "offer").map(item => offers.find(offer => offer.id === item.id)).filter(Boolean);
-  const favoriteSpecialists = favorites.filter(item => item.type === "specialist").map(item => specialists.find(specialist => specialist.id === item.id)).filter(Boolean);
+const initialsOf=name=>String(name||"Продавец").split(/\s+/).filter(Boolean).map(x=>x[0]).slice(0,2).join("").toUpperCase();
+function Heart({filled=false}){return <svg viewBox="0 0 24 24" width="24" height="24" fill={filled?"currentColor":"none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>}
 
-  function remove(id, type) {
-    setFavorites(removeFavorite(id, type));
-  }
-
-  return <MarketFrame>
-    <MarketNavigation crumbs={[{ label: "ДокМаркет", to: "/market" }, { label: "Избранное" }]} backTo="/market" />
-    <h1 className="market-heading">Избранное</h1>
-    <p className="market-lead">Сохранённые решения и специалисты ДокМаркета.</p>
-    {!favoriteOffers.length && !favoriteSpecialists.length ? <section className="market-empty market-glass"><i className="fa-regular fa-heart" style={{ color: "#ddb66f", fontSize: "1.5rem" }} /><h2 style={{ color: "#fff" }}>В избранном пока пусто</h2><p>Сохраняйте документы, услуги и специалистов, чтобы вернуться к ним позже.</p><Link className="market-primary" to="/market">Перейти в каталог</Link></section> : <>
-      {favoriteOffers.length > 0 && <section><h2 className="market-heading" style={{ fontSize: "1.45rem" }}>Решения</h2><OffersGrid items={favoriteOffers} onFavoritesChange={setFavorites} /></section>}
-      {favoriteSpecialists.length > 0 && <section style={{ marginTop: 28 }}><h2 className="market-heading" style={{ fontSize: "1.45rem" }}>Специалисты</h2><div className="market-grid">{favoriteSpecialists.map(item => <article className="market-card market-glass" key={item.id}><span className="market-specialist-avatar">{item.initials}</span><h3 style={{ marginTop: 15 }}>{item.name}</h3><p>{item.profession}</p><div className="market-offer-actions"><Link className="market-action primary" to={`/market/specialist/${item.id}`}>Смотреть профиль</Link><button className="market-action active" type="button" onClick={() => remove(item.id, "specialist")}><i className="fa-solid fa-heart" />Удалить</button></div></article>)}</div></section>}
-    </>}
-  </MarketFrame>;
+export default function MarketFavorites(){
+ const[favorites,setFavorites]=useState(listFavorites);const[catalog,setCatalog]=useState([]);const[sellers,setSellers]=useState([]);const[loading,setLoading]=useState(true);
+ useEffect(()=>{let live=true;Promise.all([loadPublishedCatalog(),listPublicSellers(100)]).then(([items,profiles])=>{if(live){setCatalog(items||[]);setSellers(profiles||[])}}).catch(()=>{}).finally(()=>live&&setLoading(false));return()=>{live=false}},[]);
+ const favoriteOffers=favorites.filter(x=>x.type==="offer").map(x=>catalog.find(o=>String(o.id)===String(x.id))).filter(Boolean);
+ const favoriteSpecialists=favorites.filter(x=>x.type==="specialist").map(x=>sellers.find(s=>String(s.user_id)===String(x.id))).filter(Boolean);
+ const unresolved=!loading&&favorites.length>0&&favoriteOffers.length+favoriteSpecialists.length<favorites.length;
+ function remove(id,type){setFavorites(removeFavorite(id,type))}
+ return <MarketFrame><style>{`.fav-head{display:flex;align-items:center;gap:10px}.fav-head svg{color:#ff9f1c}.fav-sellers{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.fav-seller{padding:15px;border-radius:16px}.fav-seller-top{display:flex;gap:11px;align-items:center}.fav-avatar{width:45px;height:45px;border-radius:13px;display:grid;place-items:center;background:#ff9f1c;color:#07111d;font-weight:900}.fav-seller h3{margin:0;color:#fff;font-size:.92rem}.fav-seller p{margin:4px 0 0;color:#8798aa;font-size:.72rem}.fav-actions{display:grid;grid-template-columns:1fr auto;gap:7px;margin-top:13px}.fav-remove{width:43px;padding:0!important;color:#ff9f1c!important}.fav-note{margin:12px 0;color:#788a9c;font-size:.72rem}@media(max-width:700px){.fav-sellers{grid-template-columns:1fr 1fr}.fav-seller{padding:12px}}@media(max-width:440px){.fav-sellers{grid-template-columns:1fr}}`}</style><MarketNavigation crumbs={[{label:"ДокМаркет",to:"/market"},{label:"Избранное"}]} backTo="/market"/><div className="fav-head"><Heart filled/><h1 className="market-heading" style={{margin:0}}>Избранное</h1></div><p className="market-lead">Ваши сохранённые документы, услуги и продавцы.</p>{loading?<section className="market-empty market-glass">Загружаем избранное…</section>:!favoriteOffers.length&&!favoriteSpecialists.length?<section className="market-empty market-glass"><Heart/><h2 style={{color:"#fff"}}>Пока ничего не сохранено</h2><p>Нажмите сердце на товаре или в профиле продавца — позиция появится здесь.</p><Link className="market-primary" to="/market">Открыть каталог</Link></section>:<>{favoriteOffers.length>0&&<section><h2 className="market-heading" style={{fontSize:"1.35rem"}}>Документы и услуги</h2><OffersGrid items={favoriteOffers}/></section>}{favoriteSpecialists.length>0&&<section style={{marginTop:24}}><h2 className="market-heading" style={{fontSize:"1.35rem"}}>Продавцы</h2><div className="fav-sellers">{favoriteSpecialists.map(s=><article className="fav-seller market-glass" key={s.user_id}><div className="fav-seller-top"><span className="fav-avatar">{initialsOf(s.display_name)}</span><div><h3>{s.display_name}</h3><p>{s.headline||"Продавец ДокМаркета"}</p></div></div><div className="fav-actions"><Link className="market-action primary" to={`/market/specialist/${s.user_id}`}>Открыть профиль</Link><button className="market-action fav-remove" type="button" aria-label="Удалить из избранного" onClick={()=>remove(s.user_id,"specialist")}><Heart filled/></button></div></article>)}</div></section>}{unresolved&&<p className="fav-note">Некоторые старые сохранения больше не опубликованы и поэтому скрыты.</p>}</>}</MarketFrame>
 }
