@@ -1,126 +1,69 @@
-import { useEffect, useState } from "react";
-import { createPageUrl } from "@/utils";
 import { Link } from "react-router-dom";
-import { getEarlyLaunchStats } from "@/services/authService";
+import { createPageUrl } from "@/utils";
 
-const categories = [
-  { icon: "fa-money-bill-wave", bg: "#0e7490", title: "Не выплатили зарплату", desc: "Задержка зарплаты, увольнение, расчёт" },
-  { icon: "fa-rotate-left", bg: "#7c3aed", title: "Нужно вернуть деньги", desc: "Товар с браком, услуги, онлайн-курс" },
-  { icon: "fa-hand-holding-dollar", bg: "#15803d", title: "Должник не возвращает долг", desc: "Расписка, займ, договорённость" },
-  { icon: "fa-file-circle-question", bg: "#c2410c", title: "Другая ситуация", desc: "Опишите проблему, сервис подскажет шаги" },
+const situations = [
+  { icon: "fa-rotate-left", title: "Вернуть деньги", text: "Товар, услуга, онлайн-курс или подписка" },
+  { icon: "fa-money-bill-wave", title: "Получить зарплату", text: "Задержка выплаты, увольнение, расчёт" },
+  { icon: "fa-hand-holding-dollar", title: "Вернуть долг", text: "Расписка, займ или договорённость" },
+  { icon: "fa-file-circle-question", title: "Другая ситуация", text: "Опишите проблему — сервис подберёт структуру претензии" },
 ];
 
-const results = ["Готовая претензия", "Статьи закона внутри документа", "Список требований к нарушителю", "Инструкция: куда и как отправить"];
-const situations = ["не вернули деньги", "не выплатили зарплату", "продали товар с браком", "не возвращают долг"];
+const output = [
+  "Готовая досудебная претензия",
+  "Подходящие требования и ссылки на нормы",
+  "PDF и DOCX",
+  "Инструкция по отправке",
+];
+
 const steps = [
-  { icon: "fa-list-check", title: "Выберите ситуацию" },
-  { icon: "fa-message", title: "Ответьте на вопросы" },
-  { icon: "fa-file-arrow-down", title: "Скачайте претензию" },
+  ["1", "Выберите ситуацию", "Укажите, что произошло и чего хотите добиться."],
+  ["2", "Ответьте на вопросы", "Сервис соберёт необходимые данные для документа."],
+  ["3", "Получите документ", "Проверьте данные, скачайте претензию и отправьте адресату."],
 ];
-const benefits = [
-  { icon: "fa-comments", text: "Без сложных юридических слов" },
-  { icon: "fa-scale-balanced", text: "Статьи закона подставляются автоматически" },
-  { icon: "fa-user", text: "Подходит для физических лиц" },
-  { icon: "fa-user-tie", text: "Можно показать юристу перед отправкой" },
-];
-const telegramSupportUrl = "https://t.me/+mxSPQZosRBAwMTMy";
-const totalEarlyAccessSlots = 1000;
 
 export default function Home() {
-  const [earlyLaunchStats, setEarlyLaunchStats] = useState(() => getEarlyLaunchStats());
-  const reportedEarlyAccessUsers = Number(earlyLaunchStats.used) || 0;
-  const usedEarlyAccessSlots = Math.min(totalEarlyAccessSlots, Math.max(0, reportedEarlyAccessUsers || 3));
-  const remainingEarlyAccessSlots = totalEarlyAccessSlots - usedEarlyAccessSlots;
-  const progressPercent = Math.min(100, Math.max(0, (usedEarlyAccessSlots / totalEarlyAccessSlots) * 100));
-
-  useEffect(() => {
-    const refreshStats = () => setEarlyLaunchStats(getEarlyLaunchStats());
-    window.addEventListener("storage", refreshStats);
-    return () => window.removeEventListener("storage", refreshStats);
-  }, []);
-
-  return (
-    <div className="min-h-screen pt-20 sm:pt-24 pb-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <section className="grid grid-cols-1 items-start gap-x-10 gap-y-8 mb-12 lg:grid-cols-[1.12fr_.88fr] lg:gap-x-14 lg:gap-y-10 lg:mb-16">
-          <div>
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-cyan-300 text-xs sm:text-sm font-semibold border border-cyan-500/20 mb-6" style={{ background: "rgba(255,255,255,.035)" }}>
-              <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block" />
-              Претензия без юриста за 5 минут
-            </div>
-
-            <h1 className="text-4xl sm:text-5xl lg:text-[3.35rem] xl:text-6xl font-bold leading-[1.08] text-white mb-5" style={{ fontFamily: "'Space Grotesk',sans-serif" }}>
-              Составьте официальную претензию
-              <span className="block mt-2" style={{ background: "linear-gradient(135deg,#38bdf8,#818cf8 52%,#c084fc)", backgroundClip: "text", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>без сложных юридических слов</span>
-            </h1>
-
-            <p className="text-lg sm:text-xl font-semibold text-indigo-200 leading-relaxed mb-4">Для возврата денег, зарплаты, долгов, товаров и онлайн-курсов</p>
-            <p className="text-base sm:text-lg text-gray-300 leading-relaxed mb-4 max-w-3xl">Ответьте на несколько вопросов, а Досудебка подготовит документ с нужными статьями закона, требованиями и инструкцией по отправке.</p>
-            <p className="text-sm text-gray-400 leading-relaxed border-l-2 border-violet-400/50 pl-4 mb-8 max-w-2xl">Претензия — это официальное требование решить проблему до суда: вернуть деньги, выплатить долг, устранить нарушение или дать письменный ответ.</p>
-
-            <div className="flex flex-col sm:flex-row gap-3 mb-5">
-              <Link to={createPageUrl("Generator")} className="px-7 py-4 rounded-full font-semibold text-white text-base sm:text-lg inline-flex items-center justify-center gap-2" style={{ background: "linear-gradient(135deg,#0ea5e9,#8b5cf6)", boxShadow: "0 12px 35px rgba(79,70,229,.25)" }}><i className="fa-solid fa-wand-magic-sparkles" />Создать претензию</Link>
-              <Link to={createPageUrl("Pricing")} className="px-7 py-4 rounded-full font-semibold text-white border border-white/10 inline-flex items-center justify-center gap-2 hover:bg-white/10 transition-colors" style={{ background: "rgba(255,255,255,.035)" }}><i className="fa-solid fa-tag text-amber-400" />Сколько стоит</Link>
-            </div>
+  return <div className="dm-dos-home">
+    <div className="dm-dos-shell">
+      <section className="dm-dos-hero">
+        <div className="dm-dos-copy">
+          <div className="dm-dos-badge"><i className="fa-solid fa-gavel" /> Сервис ДокМаркета</div>
+          <h1>Досудебка</h1>
+          <p className="dm-dos-lead">Создайте досудебную претензию по своей ситуации внутри ДокМаркета — без отдельной регистрации и отдельного кабинета.</p>
+          <div className="dm-dos-actions">
+            <Link className="dm-dos-primary" to={createPageUrl("Generator")}><i className="fa-solid fa-wand-magic-sparkles" /> Создать претензию</Link>
+            <Link className="dm-dos-secondary" to={createPageUrl("Pricing")}><i className="fa-solid fa-tag" /> Стоимость</Link>
           </div>
+          <div className="dm-dos-meta"><span><i className="fa-solid fa-file-word" /> PDF + DOCX</span><span><i className="fa-solid fa-shield-halved" /> Единый аккаунт ДокМаркета</span><span><i className="fa-solid fa-star" /> Отзывы внутри платформы</span></div>
+        </div>
+        <aside className="dm-dos-result">
+          <span>Что получите</span>
+          <h2>Готовый документ для отправки</h2>
+          <div>{output.map(item => <p key={item}><i className="fa-solid fa-check" /> {item}</p>)}</div>
+          <strong>от 490 ₽</strong>
+          <small>Оплата подключается через общий процесс ДокМаркета. Отдельного аккаунта Досудебки нет.</small>
+        </aside>
+      </section>
 
-          <div className="self-start">
-            <aside className="relative rounded-3xl border border-indigo-400/20 p-6 sm:p-8 overflow-hidden" style={{ background: "linear-gradient(145deg,rgba(30,41,80,.78),rgba(17,16,40,.82))", boxShadow: "0 24px 70px rgba(30,27,75,.34),inset 0 1px 0 rgba(255,255,255,.07)" }}>
-              <div className="relative">
-                <div className="flex items-center gap-3 mb-6"><span className="w-11 h-11 rounded-xl flex items-center justify-center text-cyan-300" style={{ background: "rgba(56,189,248,.1)", border: "1px solid rgba(56,189,248,.2)" }}><i className="fa-solid fa-file-circle-check text-lg" /></span><h2 className="text-xl sm:text-2xl font-bold text-white" style={{ fontFamily: "'Space Grotesk',sans-serif" }}>Что получится на выходе</h2></div>
-                <div className="space-y-3 mb-7">{results.map(text => <div key={text} className="flex items-center gap-3 text-sm sm:text-base text-gray-200"><span className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-emerald-300 text-xs" style={{ background: "rgba(52,211,153,.1)" }}><i className="fa-solid fa-check" /></span>{text}</div>)}</div>
-                <div className="rounded-2xl border border-white/8 p-5" style={{ background: "rgba(5,8,20,.38)" }}><h3 className="text-sm font-semibold text-white mb-3">Подходит, если:</h3><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-2">{situations.map(text => <span key={text} className="text-xs text-gray-400 inline-flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-violet-400 shrink-0" />{text}</span>)}</div></div>
-              </div>
-            </aside>
-          </div>
+      <section className="dm-dos-section">
+        <div className="dm-dos-heading"><div><span>Ситуации</span><h2>С чем поможет сервис</h2></div><Link to={createPageUrl("Guide")}>Как это работает →</Link></div>
+        <div className="dm-dos-grid">{situations.map(item => <Link key={item.title} className="dm-dos-card" to={createPageUrl("Generator")}><div><i className={`fa-solid ${item.icon}`} /></div><h3>{item.title}</h3><p>{item.text}</p><span>Начать →</span></Link>)}</div>
+      </section>
 
-          <aside className="rounded-2xl border border-cyan-300/25 p-4 sm:p-5 lg:col-span-2" style={{ background: "linear-gradient(135deg,rgba(8,145,178,.1),rgba(124,58,237,.11)),rgba(15,23,42,.56)", boxShadow: "0 14px 34px rgba(2,8,23,.2),inset 0 1px 0 rgba(255,255,255,.06)" }} aria-labelledby="home-early-access-title">
-            <div className="grid gap-4 md:grid-cols-[minmax(0,1.2fr)_minmax(230px,.8fr)_auto] md:items-center">
-              <div>
-                <span className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-cyan-300/25 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.12em] text-cyan-200" style={{ background: "rgba(8,145,178,.12)" }}><i className="fa-solid fa-bolt" />Ранний запуск</span>
-                <h2 id="home-early-access-title" className="text-base font-bold leading-snug text-white sm:text-lg">Первые 1000 пользователей тестируют бесплатно</h2>
-                <p className="mt-1.5 text-xs leading-relaxed text-gray-300 sm:text-sm">Создайте первую претензию и проверьте результат до полноценного запуска.</p>
-              </div>
-              <div className="rounded-xl border border-white/10 px-3.5 py-3.5" style={{ background: "rgba(5,8,20,.38)" }}>
-                <div className="mb-1 text-sm font-bold text-violet-100">Занято: {usedEarlyAccessSlots} из {totalEarlyAccessSlots}</div>
-                <div className="mb-2.5 text-xs text-gray-400">Свободно: {remainingEarlyAccessSlots} мест</div>
-                <div className="h-2.5 overflow-hidden rounded-full border border-indigo-300/10 bg-indigo-950/45" role="progressbar" aria-label="Занятые места раннего запуска" aria-valuemin="0" aria-valuemax={totalEarlyAccessSlots} aria-valuenow={usedEarlyAccessSlots}><div className="h-full rounded-full" style={{ width: `${progressPercent}%`, minWidth: usedEarlyAccessSlots > 0 ? 28 : 0, background: "linear-gradient(90deg,#22d3ee,#7c3aed)", boxShadow: "0 0 12px rgba(34,211,238,.35)", transition: "width .35s ease" }} /></div>
-              </div>
-              <Link to="/Register" className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-cyan-300/20 px-4 py-3 text-center text-xs font-semibold text-cyan-200 transition-colors hover:bg-cyan-300/10">Попробовать бесплатно после регистрации <i className="fa-solid fa-arrow-right text-[9px]" /></Link>
-            </div>
-          </aside>
-        </section>
+      <section className="dm-dos-flow">
+        <div className="dm-dos-heading"><div><span>Процесс</span><h2>Три шага до претензии</h2></div></div>
+        <div className="dm-dos-steps">{steps.map(([number,title,text]) => <article key={number}><b>{number}</b><div><h3>{title}</h3><p>{text}</p></div></article>)}</div>
+      </section>
 
-        <section className="mt-10 mb-20 lg:mt-14" aria-labelledby="situations-title">
-          <div className="max-w-2xl mb-9"><h2 id="situations-title" className="text-3xl sm:text-4xl font-bold text-white mb-3" style={{ fontFamily: "'Space Grotesk',sans-serif" }}>С какой проблемой вы столкнулись?</h2><p className="text-gray-400">Выберите похожую ситуацию — детали можно уточнить на следующем шаге.</p></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">{categories.map(item => <article key={item.title} className="rounded-2xl p-6 border border-white/10 transition-all hover:-translate-y-1 hover:border-indigo-400/25" style={{ background: "rgba(255,255,255,.035)" }}><div style={{ width: 50, height: 50, borderRadius: 14, background: item.bg, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}><i className={`fa-solid ${item.icon}`} style={{ color: "white", fontSize: 20 }} /></div><h3 className="font-semibold text-white text-lg leading-snug mb-2">{item.title}</h3><p className="text-sm leading-relaxed text-gray-400">{item.desc}</p></article>)}</div>
-        </section>
-
-        <section className="mb-20" aria-labelledby="how-title">
-          <div className="text-center mb-10"><h2 id="how-title" className="text-3xl sm:text-4xl font-bold text-white mb-3" style={{ fontFamily: "'Space Grotesk',sans-serif" }}>Как это работает</h2><p className="text-gray-400">Три шага — и у вас готовый документ.</p></div>
-          <div className="relative grid grid-cols-1 md:grid-cols-3 gap-5"><div aria-hidden className="hidden md:block absolute top-10 left-[17%] right-[17%] h-px" style={{ background: "linear-gradient(90deg,transparent,#6366f1,#8b5cf6,transparent)" }} />{steps.map((step,index) => <article key={step.title} className="relative rounded-2xl p-7 text-center border border-indigo-400/15" style={{ background: "linear-gradient(145deg,rgba(99,102,241,.09),rgba(255,255,255,.025))" }}><div className="relative z-10 w-14 h-14 rounded-2xl mx-auto mb-5 flex items-center justify-center text-indigo-200 text-xl" style={{ background: "#17172b", border: "1px solid rgba(129,140,248,.3)", boxShadow: "0 0 25px rgba(99,102,241,.15)" }}><i className={`fa-solid ${step.icon}`} /></div><span className="text-xs text-indigo-300 font-semibold">Шаг {index + 1}</span><h3 className="text-white font-semibold text-lg mt-2">{step.title}</h3></article>)}</div>
-          <p className="text-center text-sm text-gray-400 mt-7">Документ можно сохранить в PDF/DOCX и отправить по инструкции.</p>
-        </section>
-
-        <section className="rounded-3xl border border-white/10 p-6 sm:p-10 lg:p-12" style={{ background: "radial-gradient(circle at top,rgba(99,102,241,.14),rgba(255,255,255,.025) 62%)" }} aria-labelledby="trust-title">
-          <div className="grid lg:grid-cols-[.72fr_1.28fr] gap-8 lg:gap-12 items-center"><div><h2 id="trust-title" className="text-3xl sm:text-4xl font-bold text-white mb-4" style={{ fontFamily: "'Space Grotesk',sans-serif" }}>Понятный документ с опорой на закон</h2><p className="text-sm text-gray-500 leading-relaxed">Сервис помогает подготовить документ, но не заменяет индивидуальную консультацию юриста.</p></div><div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{benefits.map(item => <div key={item.text} className="flex items-center gap-4 rounded-xl border border-white/5 p-4" style={{ background: "rgba(10,10,15,.42)" }}><span className="w-10 h-10 rounded-xl flex items-center justify-center text-cyan-300 shrink-0" style={{ background: "rgba(56,189,248,.1)" }}><i className={`fa-solid ${item.icon}`} /></span><span className="text-sm text-gray-200">{item.text}</span></div>)}</div></div>
-        </section>
-
-        <section className="mt-12 rounded-2xl border border-cyan-300/20 p-5 sm:p-6" style={{ background: "linear-gradient(135deg,rgba(8,145,178,.08),rgba(124,58,237,.09)),rgba(15,23,42,.58)", boxShadow: "0 16px 38px rgba(2,8,23,.22),inset 0 1px 0 rgba(255,255,255,.05)" }} aria-labelledby="telegram-support-title">
-          <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-xl text-cyan-200" style={{ background: "linear-gradient(135deg,rgba(34,211,238,.16),rgba(124,58,237,.2))", border: "1px solid rgba(103,232,249,.2)" }}><i className="fa-brands fa-telegram" /></span>
-            <div className="min-w-0 flex-1">
-              <h2 id="telegram-support-title" className="text-lg font-bold text-white sm:text-xl">Поддержка и новости Досудебки</h2>
-              <p className="mt-1 text-sm leading-relaxed text-gray-400">В Telegram можно задать вопрос, следить за обновлениями сервиса и узнать о новых шаблонах претензий.</p>
-            </div>
-            <a href={telegramSupportUrl} target="_blank" rel="noopener noreferrer" className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-cyan-300/25 px-5 py-3 text-sm font-bold text-cyan-100 transition-colors hover:bg-cyan-300/10 sm:w-auto"><i className="fa-brands fa-telegram" />Открыть Telegram</a>
-          </div>
-        </section>
-
-        <footer className="mt-12 border-t border-white/10 py-6 text-center text-xs leading-relaxed text-gray-500">
-          © 2026 Досудебка — генерация юридических документов по законодательству РФ
-        </footer>
-      </div>
+      <section className="dm-dos-trust">
+        <div><span>ДокМаркет</span><h2>Один сервис внутри одного приложения</h2><p>Покупки документов, Досудебка, специалисты, заказы и отзывы используют один аккаунт и один кабинет ДокМаркета.</p></div>
+        <div className="dm-dos-trust-actions"><Link to="/reviews">Отзывы</Link><Link to="/market">Вернуться в каталог</Link></div>
+      </section>
     </div>
-  );
+
+    <style>{`
+      .dm-dos-home{min-height:100vh;padding:24px 14px 84px;background:#07111d;color:#f8fafc}.dm-dos-shell{width:min(1180px,100%);margin:0 auto}.dm-dos-hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.65fr);gap:18px;margin-bottom:30px}.dm-dos-copy,.dm-dos-result,.dm-dos-card,.dm-dos-flow,.dm-dos-trust{border:1px solid #20384a;background:#0d1b29;border-radius:20px}.dm-dos-copy{padding:clamp(22px,4vw,42px);background:radial-gradient(circle at 85% 10%,rgba(255,159,28,.10),transparent 18rem),#0d1b29}.dm-dos-badge{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;color:#ffb65f;background:#21180d;border:1px solid #5f431f;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em}.dm-dos-copy h1{margin:16px 0 10px;font:850 clamp(2.4rem,7vw,4.7rem)/.98 'Space Grotesk',sans-serif}.dm-dos-lead{max-width:720px;margin:0;color:#a7b3c3;font-size:clamp(.95rem,2vw,1.18rem);line-height:1.55}.dm-dos-actions{display:flex;flex-wrap:wrap;gap:9px;margin:24px 0 16px}.dm-dos-actions a{min-height:46px;padding:0 16px;border-radius:12px;text-decoration:none;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:8px}.dm-dos-primary{background:linear-gradient(135deg,#f28a16,#ffb347);color:#07111d}.dm-dos-secondary{background:#101f2e;border:1px solid #294052;color:#eef3f8}.dm-dos-meta{display:flex;flex-wrap:wrap;gap:8px}.dm-dos-meta span{padding:7px 9px;border-radius:9px;background:#0a1723;border:1px solid #1c3345;color:#8fa0b2;font-size:.68rem}.dm-dos-meta i{color:#ff9f1c}.dm-dos-result{padding:22px;display:grid;align-content:start;gap:10px}.dm-dos-result>span,.dm-dos-heading>div>span,.dm-dos-trust>div>span{color:#ff9f1c;font-size:.66rem;font-weight:850;text-transform:uppercase;letter-spacing:.09em}.dm-dos-result h2{margin:0 0 5px;font-size:1.25rem}.dm-dos-result p{margin:0;padding:8px 0;border-bottom:1px solid #182d3e;color:#c7d0db;font-size:.78rem}.dm-dos-result p i{color:#65d98a;margin-right:7px}.dm-dos-result strong{margin-top:7px;font-size:1.45rem;color:#ffb65f}.dm-dos-result small{color:#718195;line-height:1.45}.dm-dos-section{margin-bottom:30px}.dm-dos-heading{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:12px}.dm-dos-heading h2{margin:4px 0 0;font-size:1.45rem}.dm-dos-heading a{color:#25c9e8;text-decoration:none;font-size:.75rem;font-weight:800}.dm-dos-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.dm-dos-card{padding:16px;color:#fff;text-decoration:none;min-height:185px;display:flex;flex-direction:column}.dm-dos-card>div{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:#21180d;color:#ff9f1c;border:1px solid #5f431f}.dm-dos-card h3{margin:14px 0 6px;font-size:.96rem}.dm-dos-card p{margin:0;color:#8697aa;font-size:.74rem;line-height:1.45}.dm-dos-card>span{margin-top:auto;padding-top:12px;color:#ffb65f;font-size:.72rem;font-weight:800}.dm-dos-flow{padding:20px;margin-bottom:30px}.dm-dos-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.dm-dos-steps article{display:flex;gap:11px;padding:14px;border-radius:14px;background:#091723;border:1px solid #1d3344}.dm-dos-steps b{width:34px;height:34px;flex:0 0 34px;border-radius:10px;display:grid;place-items:center;background:#21180d;color:#ffb65f}.dm-dos-steps h3{margin:0 0 5px;font-size:.88rem}.dm-dos-steps p{margin:0;color:#8292a5;font-size:.7rem;line-height:1.45}.dm-dos-trust{padding:20px;display:flex;align-items:center;justify-content:space-between;gap:18px}.dm-dos-trust h2{margin:5px 0 7px;font-size:1.2rem}.dm-dos-trust p{margin:0;max-width:720px;color:#8494a7;font-size:.76rem;line-height:1.5}.dm-dos-trust-actions{display:flex;gap:8px;flex-wrap:wrap}.dm-dos-trust-actions a{padding:9px 11px;border-radius:10px;border:1px solid #294052;color:#e5edf5;text-decoration:none;font-size:.72rem;font-weight:800}
+      @media(max-width:850px){.dm-dos-hero{grid-template-columns:1fr}.dm-dos-grid{grid-template-columns:repeat(2,1fr)}.dm-dos-steps{grid-template-columns:1fr}.dm-dos-trust{align-items:flex-start;flex-direction:column}}
+      @media(max-width:520px){.dm-dos-home{padding:12px 10px 82px}.dm-dos-copy,.dm-dos-result{border-radius:16px}.dm-dos-copy{padding:18px}.dm-dos-copy h1{font-size:2.5rem}.dm-dos-actions{display:grid;grid-template-columns:1fr}.dm-dos-actions a{width:100%}.dm-dos-meta{display:grid}.dm-dos-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.dm-dos-card{min-height:150px;padding:12px;border-radius:14px}.dm-dos-card>div{width:36px;height:36px}.dm-dos-card h3{font-size:.82rem;margin-top:10px}.dm-dos-card p{font-size:.65rem}.dm-dos-heading h2{font-size:1.2rem}.dm-dos-heading a{font-size:.64rem}.dm-dos-flow,.dm-dos-trust{padding:14px;border-radius:16px}}
+    `}</style>
+  </div>;
 }
