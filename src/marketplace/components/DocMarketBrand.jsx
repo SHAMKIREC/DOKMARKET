@@ -1,56 +1,8 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import docmarketIcon from "../../assets/docmarket-icon.png";
-
-function Icon({ name }) {
-  const common = { width: 19, height: 19, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": true };
-  if (name === "heart") return <svg {...common}><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" /></svg>;
-  if (name === "bag") return <svg {...common}><path d="M6 8h12l1 13H5L6 8Z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg>;
-  if (name === "user") return <svg {...common}><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>;
-  if (name === "store") return <svg {...common}><path d="M3 10h18"/><path d="M5 10v10h14V10"/><path d="m4 4-1 6h18l-1-6H4Z"/><path d="M9 14h6v6H9z"/></svg>;
-  if (name === "users") return <svg {...common}><path d="M8 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM16 12a3 3 0 1 0 0-6"/><path d="M2 21c0-4 2-6 6-6s6 2 6 6M15 16c4 0 6 2 7 5"/></svg>;
-  if (name === "close") return <svg {...common}><path d="M6 6l12 12M18 6 6 18"/></svg>;
-  return <svg {...common}><path d="M4 7h16M4 12h16M4 17h16"/></svg>;
-}
-
-export function DocMarketBrand() {
-  return <Link className="docmarket-brand" to="/" aria-label="ДокМаркет — на главную">
-    <img className="docmarket-brand-icon" src={docmarketIcon} alt="" aria-hidden="true" />
-    <span className="docmarket-brand-copy"><strong><span>Док</span><em>Маркет</em></strong><small>Маркетплейс документов</small></span>
-  </Link>;
-}
-
-export default function DocMarketHeader() {
-  const { user } = useAuth();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const close = () => setMenuOpen(false);
-
-  return <header className="docmarket-header">
-    <div className="docmarket-header-inner">
-      <DocMarketBrand />
-      <nav className="docmarket-main-nav" aria-label="Навигация ДокМаркета">
-        <Link to="/market" onClick={close}>Каталог</Link>
-        <Link to="/#verified-sellers" onClick={close}>Специалисты</Link>
-        <Link to="/partners" onClick={close}>Партнёры</Link>
-        <Link to="/reviews" onClick={close}>Отзывы</Link>
-        <Link to="/seller" onClick={close}>Стать селлером</Link>
-      </nav>
-      <nav className="docmarket-actions" aria-label="Действия ДокМаркета">
-        <Link to="/market/favorites" title="Избранное" aria-label="Избранное"><Icon name="heart"/><span>Избранное</span></Link>
-        <Link to="/market/cart" title="Корзина" aria-label="Корзина"><Icon name="bag"/><span>Корзина</span></Link>
-        <Link to={user ? "/Dashboard" : "/Login"} title={user ? "Кабинет" : "Войти"} aria-label={user ? "Кабинет" : "Войти"}><Icon name="user"/><span>{user ? "Кабинет" : "Войти"}</span></Link>
-        <button className="docmarket-menu-button" type="button" aria-label={menuOpen ? "Закрыть меню" : "Открыть меню"} aria-expanded={menuOpen} onClick={() => setMenuOpen(v => !v)}><Icon name={menuOpen ? "close" : "menu"}/></button>
-      </nav>
-    </div>
-    {menuOpen && <div className="docmarket-mobile-menu">
-      <Link to="/market" onClick={close}><Icon name="store"/>Каталог документов</Link>
-      <Link to="/market/favorites" onClick={close}><Icon name="heart"/>Избранное</Link>
-      <Link to="/market/cart" onClick={close}><Icon name="bag"/>Корзина</Link>
-      <Link to={user ? "/Dashboard" : "/Login"} onClick={close}><Icon name="user"/>{user ? "Личный кабинет" : "Войти"}</Link>
-      <Link to="/seller" onClick={close}><Icon name="store"/>Стать селлером</Link>
-      <Link to="/partners" onClick={close}><Icon name="users"/>Партнёры</Link>
-      <Link to="/construction-docs" onClick={close}><Icon name="store"/>Строительная документация</Link>
-    </div>}
-  </header>;
-}
+function Icon({name,size=19}){const c={width:size,height:size,viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:2,strokeLinecap:"round",strokeLinejoin:"round","aria-hidden":true};const p={heart:<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/>,bag:<><path d="M6 8h12l1 13H5L6 8Z"/><path d="M9 8a3 3 0 0 1 6 0"/></>,user:<><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></>,store:<><path d="M3 10h18"/><path d="M5 10v10h14V10"/><path d="m4 4-1 6h18l-1-6H4Z"/></>,home:<><path d="m3 11 9-8 9 8"/><path d="M5 10v11h14V10M9 21v-7h6v7"/></>,docs:<><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v5h5M9 12h7M9 16h7"/></>,users:<><path d="M8 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM16 12a3 3 0 1 0 0-6"/><path d="M2 21c0-4 2-6 6-6s6 2 6 6"/></>,close:<path d="M6 6l12 12M18 6 6 18"/>,menu:<path d="M4 7h16M4 12h16M4 17h16"/>};return <svg {...c}>{p[name]||p.menu}</svg>}
+export function DocMarketBrand(){return <Link className="docmarket-brand" to="/" aria-label="ДокМаркет — на главную"><img className="docmarket-brand-icon" src={docmarketIcon} alt=""/><span className="docmarket-brand-copy"><strong><span>Док</span><em>Маркет</em></strong><small>Маркетплейс документов</small></span></Link>}
+export function DocMarketBottomNav(){const{pathname}=useLocation(),{user}=useAuth();const items=[["/","home","Главная",pathname==="/"],["/market","store","Каталог",pathname==="/market"],["/MyDocuments","docs","Документы",pathname.startsWith("/MyDocuments")],["/market/favorites","heart","Избранное",pathname.startsWith("/market/favorites")],[user?"/Dashboard":"/Login","user","Профиль",pathname.startsWith("/Dashboard")||pathname.startsWith("/Profile")||pathname.startsWith("/Login")]];return <nav className="dm-global-bottom" aria-label="Основная навигация">{items.map(([to,icon,label,active])=><Link className={active?"active":""} to={to} key={label}><Icon name={icon} size={20}/><span>{label}</span></Link>)}</nav>}
+export default function DocMarketHeader(){const{user}=useAuth();const[menuOpen,setMenuOpen]=useState(false),close=()=>setMenuOpen(false);return <><style>{`.dm-global-bottom{display:none}@media(max-width:760px){body{padding-bottom:62px}.dm-global-bottom{position:fixed;z-index:1000;left:8px;right:8px;bottom:max(7px,env(safe-area-inset-bottom));height:58px;padding:5px 4px;display:grid;grid-template-columns:repeat(5,1fr);background:rgba(7,17,29,.96);border:1px solid #294052;border-radius:17px;box-shadow:0 12px 35px #0009;backdrop-filter:blur(14px)}.dm-global-bottom a{display:grid;place-items:center;align-content:center;gap:2px;color:#718397;text-decoration:none;font-size:.56rem;font-weight:800;min-width:0}.dm-global-bottom a.active{color:#ff9f1c}.dm-global-bottom svg{width:20px;height:20px}.dm-mobile-bottom{display:none!important}}`}</style><header className="docmarket-header"><div className="docmarket-header-inner"><DocMarketBrand/><nav className="docmarket-main-nav"><Link to="/market">Каталог</Link><Link to="/#verified-sellers">Специалисты</Link><Link to="/partners">Партнёры</Link><Link to="/reviews">Отзывы</Link><Link to="/seller">Стать селлером</Link></nav><nav className="docmarket-actions"><Link to="/market/favorites" aria-label="Избранное"><Icon name="heart"/><span>Избранное</span></Link><Link to="/market/cart" aria-label="Корзина"><Icon name="bag"/><span>Корзина</span></Link><Link to={user?"/Dashboard":"/Login"} aria-label={user?"Кабинет":"Войти"}><Icon name="user"/><span>{user?"Кабинет":"Войти"}</span></Link><button className="docmarket-menu-button" type="button" aria-label={menuOpen?"Закрыть меню":"Открыть меню"} onClick={()=>setMenuOpen(v=>!v)}><Icon name={menuOpen?"close":"menu"}/></button></nav></div>{menuOpen&&<div className="docmarket-mobile-menu"><Link to="/market" onClick={close}><Icon name="store"/>Каталог документов</Link><Link to="/market/favorites" onClick={close}><Icon name="heart"/>Избранное</Link><Link to="/market/cart" onClick={close}><Icon name="bag"/>Корзина</Link><Link to={user?"/Dashboard":"/Login"} onClick={close}><Icon name="user"/>{user?"Личный кабинет":"Войти"}</Link><Link to="/seller" onClick={close}><Icon name="store"/>Стать селлером</Link><Link to="/partners" onClick={close}><Icon name="users"/>Партнёры</Link><Link to="/construction-docs" onClick={close}><Icon name="docs"/>Строительная документация</Link></div>}</header><DocMarketBottomNav/></>}
