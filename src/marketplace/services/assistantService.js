@@ -6,15 +6,18 @@ const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.met
 export async function askDocMarketAssistant({ message, history = [], catalog = [] }) {
   if (!SUPABASE_URL || !SUPABASE_KEY) throw new Error("ASSISTANT_BACKEND_UNAVAILABLE");
 
-  const session = await ensureSession();
-  if (!session?.access_token) throw new Error("ASSISTANT_AUTH_REQUIRED");
+  let token = SUPABASE_KEY;
+  try {
+    const session = await ensureSession();
+    if (session?.access_token) token = session.access_token;
+  } catch {}
 
   const response = await fetch(`${SUPABASE_URL.replace(/\/$/, "")}/functions/v1/dokmarket-assistant`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${session.access_token}`,
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
       message,
