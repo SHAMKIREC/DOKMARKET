@@ -5,6 +5,7 @@ import '@/index.css'
 import '@/styles/final-product-polish.css'
 import '@/styles/category-icons.css'
 import '@/styles/brand-overrides.css'
+import '@/styles/mobile-hotfix.css'
 
 // Unified DocMarket visual system entrypoint.
 ReactDOM.createRoot(document.getElementById('root')).render(
