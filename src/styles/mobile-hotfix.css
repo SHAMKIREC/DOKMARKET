@@ -7,12 +7,60 @@
   .docmarket-actions{display:flex!important;flex-direction:row!important;align-items:center!important;margin-left:auto!important;gap:5px!important;width:auto!important;height:auto!important}
   .docmarket-actions>a,.docmarket-menu-button{display:grid!important;place-items:center!important;width:38px!important;min-width:38px!important;height:38px!important;min-height:38px!important;margin:0!important;padding:0!important}
   .docmarket-actions>a span{display:none!important}
-  .market-content{padding-top:10px!important}
+
+  /* Compact vertical rhythm from the approved mockup. */
+  .market-content{padding:8px 9px 82px!important}
   .market-shell{padding-top:0!important}
-  .market-hero{margin-top:0!important}
-  .dm-assistant-fab{right:14px!important;bottom:max(14px,env(safe-area-inset-bottom))!important;width:48px!important;height:48px!important;min-width:48px!important;min-height:48px!important;padding:0!important;display:grid!important;place-items:center!important;border-radius:50%!important;overflow:hidden!important}
+  .dm-market-top{margin:4px 0 12px!important}
+  .dm-category-section,.dm-shelf{margin-bottom:16px!important}
+  .dm-storefront-heading{margin-bottom:8px!important}
+  .dm-storefront-heading h1,.dm-storefront-heading h2{font-size:1.18rem!important}
+  .dm-home-links{gap:7px!important;margin-top:9px!important}
+  .dm-home-links>a{min-height:52px!important;padding:10px 12px!important}
+  .dm-home-links>a[href='/seller']{display:none!important}
+  .market-seller-cta{display:none!important}
+
+  /* Category tiles: denser, deeper, richer, closer to 3D. */
+  .dm-category-grid{gap:7px!important}
+  .dm-category-card{position:relative!important;isolation:isolate!important;min-height:104px!important;padding:7px 4px 8px!important;border-radius:14px!important;overflow:hidden!important;background:radial-gradient(circle at 50% 28%,rgba(210,146,65,.11),transparent 44%),linear-gradient(155deg,#111d27,#08131d 74%)!important;border:1px solid #3b342d!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.04),inset 0 -18px 24px rgba(0,0,0,.18),0 8px 18px rgba(0,0,0,.18)!important}
+  .dm-category-card:before{content:"";position:absolute;inset:-18% -12% 34%;z-index:-2;background:radial-gradient(circle at 50% 52%,rgba(230,171,91,.16),transparent 40%),linear-gradient(180deg,rgba(255,255,255,.025),transparent);filter:blur(2px);pointer-events:none}
+  .dm-category-card:after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,transparent 35%,rgba(5,10,15,.28) 68%,rgba(5,10,15,.72) 100%);pointer-events:none}
+  .dm-category-card .dm-premium-icon,.dm-category-card .dm-cat-icon{width:52px!important;height:52px!important;border-radius:14px!important;transform:perspective(120px) rotateX(5deg) translateY(-1px)!important;background:radial-gradient(circle at 34% 22%,rgba(255,224,176,.16),transparent 28%),linear-gradient(145deg,#27221d 0%,#17191a 58%,#090d11 100%)!important;border:1px solid rgba(217,154,74,.48)!important;box-shadow:inset 0 1px 0 rgba(255,245,225,.16),inset 0 -10px 16px rgba(0,0,0,.35),0 8px 15px rgba(0,0,0,.34),0 0 16px rgba(218,151,66,.12)!important}
+  .dm-category-card .dm-premium-icon svg{filter:drop-shadow(0 2px 1px rgba(0,0,0,.85)) drop-shadow(0 0 6px rgba(227,164,81,.22))!important}
+  .dm-category-card strong{font-size:.66rem!important;line-height:1.08!important;text-shadow:0 2px 5px #000!important}
+  .dm-more-cats{margin-top:7px!important;padding:7px 12px!important}
+
+  /* Product cards should read like products, not placeholders. */
+  .dm-product-card{flex-basis:148px!important;padding:7px!important;border-radius:14px!important}
+  .dm-product-preview{height:94px!important;margin-bottom:3px!important;background:radial-gradient(circle at 50% 20%,rgba(225,160,76,.08),transparent 40%),linear-gradient(155deg,#182533,#0c1620)!important}
+  .dm-paper{width:64%!important;height:75px!important;transform:perspective(130px) rotateX(3deg) rotateY(-3deg)!important;box-shadow:0 10px 16px rgba(0,0,0,.32)!important}
+  .dm-product-card h3{font-size:.68rem!important;min-height:31px!important}
+  .dm-product-copy{gap:4px!important}
+  .dm-price{font-size:.79rem!important}
+
+  /* Services and specialists: shorter cards, no giant empty gaps. */
+  .dm-horizontal-services{gap:8px!important}
+  .dm-service-tile{flex-basis:245px!important;min-height:124px!important;padding:10px!important;border-radius:15px!important;align-items:center!important}
+  .dm-service-tile .dm-premium-icon{width:54px!important;height:54px!important;flex:0 0 54px!important}
+  .dm-service-copy p{font-size:.69rem!important;line-height:1.35!important;margin:3px 0!important}
+  .dm-service-copy h3{font-size:.92rem!important;margin:2px 0!important}
+  .dm-service-copy>span{font-size:.57rem!important}
+
+  /* Fixed navigation and assistant must never cover content. */
+  .dm-global-bottom{left:8px!important;right:8px!important;bottom:max(6px,env(safe-area-inset-bottom))!important;height:58px!important;border-radius:17px!important}
+  .dm-assistant-fab{right:14px!important;bottom:76px!important;width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;padding:0!important;display:grid!important;place-items:center!important;border-radius:50%!important;overflow:hidden!important;z-index:1001!important}
   .dm-assistant-fab span{display:none!important}
   .dm-assistant-fab i{display:none!important}
-  .dm-assistant-fab::before{content:"AI";display:grid;place-items:center;width:100%;height:100%;font:900 .78rem/1 system-ui,sans-serif;color:#fff;letter-spacing:.02em}
-  .dm-assistant{right:10px!important;bottom:72px!important;width:calc(100vw - 20px)!important;max-height:calc(100dvh - 90px)!important}
+  .dm-assistant-fab::before{content:"✦";display:grid;place-items:center;width:100%;height:100%;font:900 1rem/1 system-ui,sans-serif;color:#fff}
+  .dm-assistant{right:10px!important;bottom:132px!important;width:calc(100vw - 20px)!important;max-height:calc(100dvh - 150px)!important}
+
+  /* Dosudebka: compact sticky header and fewer giant vertical gaps. */
+  .dm-service-nav{position:sticky!important;top:58px!important;z-index:80!important}
+  .dm-service-nav-inner{min-height:46px!important;padding:5px 8px!important}
+  .dm-service-symbol{width:36px!important;height:36px!important;min-width:36px!important;border-radius:10px!important}
+  .dm-service-links a{padding:7px 8px!important;font-size:.62rem!important}
+  .dosudebka-page section,.dosudebka-shell section{margin-top:12px!important;margin-bottom:12px!important}
+  .dosudebka-page [class*='card'],.dosudebka-shell [class*='card']{padding-top:14px!important;padding-bottom:14px!important}
+  .dosudebka-page [class*='grid'],.dosudebka-shell [class*='grid']{gap:10px!important}
+  .dosudebka-page h1,.dosudebka-shell h1{scroll-margin-top:116px!important}
 }
