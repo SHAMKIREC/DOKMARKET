@@ -2,6 +2,33 @@ import { publicRestRequest } from "@/lib/supabaseRest";
 
 const STOREFRONT_TYPE = { document:"ready_file", bundle:"bundle", smart_service:"platform_generator", specialist_service:"service", guide:"guide", online_form:"online_form" };
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const COLLECTIVE_CLAIM = {
+  id:"core-collective-claim",
+  slug:"collective-claim",
+  type:"ready_file",
+  databaseType:"document",
+  title:"Коллективная досудебная претензия",
+  description:"Претензия от нескольких участников по общей ситуации с добавлением участников и подготовкой общего документа.",
+  longDescription:"Коллективная досудебная претензия для нескольких участников по общей ситуации.",
+  category:"legal",
+  subcategory:"claims",
+  providerType:"platform",
+  providerId:null,
+  providerName:"ДокМаркет",
+  price:790,
+  priceType:"from",
+  formats:["PDF","DOCX"],
+  tags:["коллективная претензия","досудебная претензия","претензия","юридические документы"],
+  featured:true,
+  badge:"Коллективная",
+  whatIncluded:"Общий документ, список участников, PDF и DOCX",
+  suitableFor:"Группы участников с общей ситуацией",
+  usage:"Добавьте участников, заполните общие обстоятельства и сформируйте документ.",
+  materialType:"ready_file",
+  route:"/Generator?mode=collective",
+  actionUrl:"/Generator?mode=collective",
+  coreFallback:true,
+};
 
 function mapRow(row) {
   if (!row) return null;
@@ -25,13 +52,20 @@ function mapRow(row) {
 }
 
 export async function loadPublishedCatalog() {
-  const rows = await publicRestRequest("catalog_items?status=eq.published&select=*&order=featured.desc,sort_order.asc,created_at.desc");
-  return (Array.isArray(rows) ? rows : []).map(mapRow);
+  try {
+    const rows = await publicRestRequest("catalog_items?status=eq.published&select=*&order=featured.desc,sort_order.asc,created_at.desc");
+    const mapped = (Array.isArray(rows) ? rows : []).map(mapRow);
+    const hasCollective = mapped.some(item => String(item?.slug || "").toLowerCase() === "collective-claim" || String(item?.title || "").toLowerCase().includes("коллективн"));
+    return hasCollective ? mapped : [COLLECTIVE_CLAIM, ...mapped];
+  } catch {
+    return [COLLECTIVE_CLAIM];
+  }
 }
 
 export async function loadPublishedCatalogItem(idOrSlug) {
   if (!idOrSlug) return null;
   const raw = String(idOrSlug);
+  if (raw === COLLECTIVE_CLAIM.id || raw === COLLECTIVE_CLAIM.slug) return COLLECTIVE_CLAIM;
   const q = encodeURIComponent(raw);
   const path = UUID_RE.test(raw)
     ? `catalog_items?status=eq.published&id=eq.${q}&select=*`
