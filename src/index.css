@@ -146,3 +146,13 @@
     border-radius:16px!important;
   }
 }
+/* Refined DokMarket navigation: one duotone icon language across header and mobile tabs. */
+.dm-icon-glow{stroke:#dca253}
+.dm-icon-check{stroke:#07111d;stroke-width:1.5}
+@media(max-width:760px){
+  .dm-global-bottom{border-color:#3f4650!important}
+  .dm-global-bottom a{border-radius:12px;transition:color .18s ease,background .18s ease,box-shadow .18s ease}
+  .dm-global-bottom a.active{color:#efb665!important;background:linear-gradient(180deg,rgba(218,154,76,.16),rgba(218,154,76,.06));box-shadow:inset 0 0 0 1px rgba(218,154,76,.18)}
+  .dm-global-bottom svg{width:21px!important;height:21px!important}
+  .dm-assistant-fab{width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;right:12px!important}
+}
