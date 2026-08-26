@@ -27,12 +27,13 @@
   .dm-category-card:after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,transparent 35%,rgba(5,10,15,.28) 68%,rgba(5,10,15,.72) 100%);pointer-events:none}
   .dm-category-card .dm-premium-icon,.dm-category-card .dm-cat-icon{width:52px!important;height:52px!important;border-radius:14px!important;transform:perspective(120px) rotateX(5deg) translateY(-1px)!important;background:radial-gradient(circle at 34% 22%,rgba(255,224,176,.16),transparent 28%),linear-gradient(145deg,#27221d 0%,#17191a 58%,#090d11 100%)!important;border:1px solid rgba(217,154,74,.48)!important;box-shadow:inset 0 1px 0 rgba(255,245,225,.16),inset 0 -10px 16px rgba(0,0,0,.35),0 8px 15px rgba(0,0,0,.34),0 0 16px rgba(218,151,66,.12)!important}
   .dm-category-card .dm-premium-icon svg{filter:drop-shadow(0 2px 1px rgba(0,0,0,.85)) drop-shadow(0 0 6px rgba(227,164,81,.22))!important}
-  .dm-category-card strong{font-size:.66rem!important;line-height:1.08!important;text-shadow:0 2px 5px #000!important}
+  .dm-category-card strong{font-size:.60rem!important;line-height:1.02!important;letter-spacing:-.025em!important;padding-left:2px!important;padding-right:2px!important;overflow-wrap:anywhere!important;hyphens:auto!important;text-shadow:0 2px 5px #000!important}
   .dm-more-cats{margin-top:7px!important;padding:7px 12px!important}
 
   /* Product cards should read like products, not placeholders. */
   .dm-product-card{flex-basis:148px!important;padding:7px!important;border-radius:14px!important}
-  .dm-product-preview{height:94px!important;margin-bottom:3px!important;background:radial-gradient(circle at 50% 20%,rgba(225,160,76,.08),transparent 40%),linear-gradient(155deg,#182533,#0c1620)!important}
+  .dm-product-preview{height:112px!important;margin-bottom:3px!important;background:#07111d!important}
+  .dm-product-art{inset:0 auto!important;left:50%!important;width:112px!important;height:112px!important;transform:translateX(-50%)!important;background-size:400% 400%!important}
   .dm-paper{width:64%!important;height:75px!important;transform:perspective(130px) rotateX(3deg) rotateY(-3deg)!important;box-shadow:0 10px 16px rgba(0,0,0,.32)!important}
   .dm-product-card h3{font-size:.68rem!important;min-height:31px!important}
   .dm-product-copy{gap:4px!important}
@@ -48,11 +49,11 @@
 
   /* Fixed navigation and assistant must never cover content. */
   .dm-global-bottom{left:8px!important;right:8px!important;bottom:max(6px,env(safe-area-inset-bottom))!important;height:58px!important;border-radius:17px!important}
-  .dm-assistant-fab{right:14px!important;bottom:76px!important;width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;padding:0!important;display:grid!important;place-items:center!important;border-radius:50%!important;overflow:hidden!important;z-index:1001!important}
+  .dm-assistant-fab{right:14px!important;bottom:calc(76px + env(safe-area-inset-bottom))!important;width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;padding:0!important;display:grid!important;place-items:center!important;border-radius:50%!important;overflow:hidden!important;z-index:1001!important}
   .dm-assistant-fab span{display:none!important}
   .dm-assistant-fab i{display:none!important}
   .dm-assistant-fab::before{content:"✦";display:grid;place-items:center;width:100%;height:100%;font:900 1rem/1 system-ui,sans-serif;color:#fff}
-  .dm-assistant{right:10px!important;bottom:132px!important;width:calc(100vw - 20px)!important;max-height:calc(100dvh - 150px)!important}
+  .dm-assistant{right:10px!important;bottom:calc(132px + env(safe-area-inset-bottom))!important;width:calc(100vw - 20px)!important;max-height:calc(100dvh - 150px - env(safe-area-inset-bottom))!important}
 
   /* Dosudebka: compact sticky header and fewer giant vertical gaps. */
   .dm-service-nav{position:sticky!important;top:58px!important;z-index:80!important}
