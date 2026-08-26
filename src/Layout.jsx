@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import DocMarketHeader from "@/marketplace/components/DocMarketBrand";
 
 function GavelIcon(){return <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m14 4 6 6M12 6l6 6M5 15l7-7 4 4-7 7H5v-4ZM3 21h12"/></svg>}
-function NavIcon({type}){const p={viewBox:"0 0 24 24",width:20,height:20,fill:"none",stroke:"currentColor",strokeWidth:2,strokeLinecap:"round",strokeLinejoin:"round","aria-hidden":true};const paths={home:<><path d="m3 11 9-8 9 8"/><path d="M5 10v11h14V10"/></>,search:<><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></>,docs:<><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v5h5M9 12h7M9 16h6"/></>,heart:<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/>,user:<><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></>};return <svg {...p}>{paths[type]}</svg>}
+function NavIcon({type}){const p={viewBox:"0 0 24 24",width:20,height:20,fill:"none",stroke:"currentColor",strokeWidth:2,strokeLinecap:"round",strokeLinejoin:"round","aria-hidden":true};const paths={home:<><path d="m3 11 9-8 9 8"/><path d="M5 10v11h14V10"/></>,search:<><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></>,docs:<><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v5h5M9 12h7M9 16h6"/></>,heart:<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/>,bag:<><path d="M5.2 8.7h13.6l1.1 11.8H4.1L5.2 8.7Z"/><path d="M8.6 9V7.2a3.4 3.4 0 0 1 6.8 0V9"/><path d="M8 13h8" opacity=".55"/></>};return <svg {...p}>{paths[type]}</svg>}
 
 export default function Layout({ children, currentPageName }) {
   const { pathname } = useLocation();
@@ -11,10 +11,10 @@ export default function Layout({ children, currentPageName }) {
   const isDosudebkaArea = ["/dosudebka", "/generator", "/guide", "/pricing"].some(prefix => lowerPath.startsWith(prefix)) || ["Home","Dosudebka","Generator","Guide","Pricing"].includes(currentPageName);
   const mobileLinks=[
     ["/","Главная","home",pathname==="/"],
-    ["/market","Каталог","search",lowerPath.startsWith("/market")],
+    ["/market","Каталог","search",lowerPath.startsWith("/market")&&!lowerPath.startsWith("/market/favorites")&&!lowerPath.startsWith("/market/cart")],
     ["/MyDocuments","Документы","docs",lowerPath.startsWith("/mydocuments")],
     ["/market/favorites","Избранное","heart",lowerPath.startsWith("/market/favorites")],
-    ["/Dashboard","Профиль","user",lowerPath.startsWith("/dashboard")||lowerPath.startsWith("/profile")],
+    ["/market/cart","Корзина","bag",lowerPath.startsWith("/market/cart")],
   ];
   return <div className={`app-shell dm-app-shell${isDosudebkaArea ? " dm-dosudebka-area" : ""}`}>
     {!alreadyHasMarketFrame && <DocMarketHeader />}
