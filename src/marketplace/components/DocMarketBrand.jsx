@@ -31,13 +31,12 @@ export function DocMarketBrand(){
 
 export function DocMarketBottomNav(){
   const {pathname}=useLocation();
-  const {user}=useAuth();
   const items=[
     ["/","home","Главная",pathname==="/"],
     ["/market","store","Каталог",pathname==="/market"||pathname.startsWith("/market/offer")],
     ["/MyDocuments","docs","Документы",pathname.startsWith("/MyDocuments")],
     ["/market/favorites","heart","Избранное",pathname.startsWith("/market/favorites")],
-    [user?"/Dashboard":"/Login","user","Профиль",pathname.startsWith("/Dashboard")||pathname.startsWith("/Profile")||pathname.startsWith("/Login")]
+    ["/market/cart","bag","Корзина",pathname.startsWith("/market/cart")]
   ];
   return <nav className="dm-global-bottom" aria-label="Основная навигация">
     {items.map(([to,icon,label,active])=><Link className={active?"active":""} to={to} key={label}><span className="dm-bottom-icon"><Icon name={icon} size={21}/></span><span>{label}</span></Link>)}
@@ -56,7 +55,7 @@ export default function DocMarketHeader(){
         .dm-global-bottom{position:fixed;z-index:1000;left:9px;right:9px;bottom:max(7px,env(safe-area-inset-bottom));height:56px;padding:4px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:rgba(7,17,29,.965);border:1px solid #3f3428;border-radius:17px;box-shadow:0 12px 32px rgba(0,0,0,.55);backdrop-filter:blur(16px)}
         .dm-global-bottom a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;border-radius:12px;color:#8794a4;text-decoration:none;font-size:.54rem;line-height:1;font-weight:800;transition:background .18s ease,color .18s ease,transform .18s ease}
         .dm-global-bottom a:active{transform:scale(.97)}
-        .dm-global-bottom a.active{color:#17110a;background:linear-gradient(145deg,#e2a04b,#f0bc70);box-shadow:inset 0 1px rgba(255,255,255,.32),0 5px 15px rgba(217,145,51,.22)}
+        .dm-global-bottom a.active{color:#f0b45d;background:linear-gradient(145deg,#2a2015,#17140f);border:1px solid #6f4d29;box-shadow:inset 0 1px rgba(255,255,255,.06),0 4px 12px rgba(0,0,0,.22)}
         .dm-bottom-icon{width:25px;height:24px;display:grid;place-items:center}
         .dm-global-bottom svg{width:21px;height:21px;display:block}
         .dm-mobile-bottom{display:none!important}
@@ -75,16 +74,12 @@ export default function DocMarketHeader(){
           <Link to="/seller">Стать селлером</Link>
         </nav>
         <nav className="docmarket-actions">
-          <Link to="/market/favorites" aria-label="Избранное"><Icon name="heart"/><span>Избранное</span></Link>
-          <Link to="/market/cart" aria-label="Корзина"><Icon name="bag"/><span>Корзина</span></Link>
           <Link to={user?"/Dashboard":"/Login"} aria-label={user?"Кабинет":"Войти"}><Icon name="user"/><span>{user?"Кабинет":"Войти"}</span></Link>
           <button className="docmarket-menu-button" type="button" aria-label={menuOpen?"Закрыть меню":"Открыть меню"} onClick={()=>setMenuOpen(v=>!v)}><Icon name={menuOpen?"close":"menu"}/></button>
         </nav>
       </div>
       {menuOpen&&<div className="docmarket-mobile-menu">
         <Link to="/market" onClick={close}><Icon name="store"/>Каталог документов</Link>
-        <Link to="/market/favorites" onClick={close}><Icon name="heart"/>Избранное</Link>
-        <Link to="/market/cart" onClick={close}><Icon name="bag"/>Корзина</Link>
         <Link to={user?"/Dashboard":"/Login"} onClick={close}><Icon name="user"/>{user?"Личный кабинет":"Войти"}</Link>
         <Link to="/seller" onClick={close}><Icon name="store"/>Стать селлером</Link>
         <Link to="/partners" onClick={close}><Icon name="users"/>Партнёры</Link>
