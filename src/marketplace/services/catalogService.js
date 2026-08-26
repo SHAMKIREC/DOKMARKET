@@ -14,7 +14,7 @@ function mapRow(row) {
     longDescription: row.description || row.short_description || "",
     category: row.category || "", subcategory: row.subcategory || "",
     providerType: row.provider_type || "platform", providerId: row.provider_id || null,
-    providerName: row.metadata?.provider_name || (row.provider_type === "platform" ? "ДокМаркет" : "Продавец ДокМаркета"),
+    providerName: row.metadata?.provider_name || (row.provider_type === "platform" ? "ДокМаркет" : "Селлер ДокМаркета"),
     price: Number(row.price_rub || 0), priceType: row.price_type || "fixed",
     formats: Array.isArray(row.formats) ? row.formats : [], tags: Array.isArray(row.tags) ? row.tags : [],
     featured: Boolean(row.featured), badge: row.metadata?.badge || "",

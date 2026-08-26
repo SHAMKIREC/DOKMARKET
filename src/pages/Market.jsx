@@ -7,7 +7,7 @@ import DocMarketHeader from "@/marketplace/components/DocMarketBrand";
 import DocMarketIcon,{docMarketIconStyles} from "@/marketplace/components/DocMarketIconKit";
 
 const CATEGORY_LABELS={
-  legal:"Юридические документы",contracts:"Договоры",accounting:"Бухгалтерия",business:"Бизнес и ИП",hr:"Кадры и HR",realty:"Недвижимость",auto:"Авто",education:"Образование",medicine:"Медицина",freelance:"Фриланс",marketplaces:"Маркетплейсы",guides:"Инструкции",ai:"AI и технологии",checklists:"Чек-листы",specialists:"Специалисты"
+  legal:"Юридические документы",contracts:"Договоры",accounting:"Бухгалтерия",business:"Бизнес и ИП",hr:"Кадры и HR",realty:"Недвижимость",auto:"Авто",education:"Образование",medicine:"Медицина",freelance:"Фриланс",marketplaces:"Маркетплейсы",guides:"Инструкции",ai:"AI и технологии",checklists:"Чек-листы",specialists:"Селлеры"
 };
 const CATEGORY_WORDS={
   legal:["юрид","претенз","жалоб","заявлен","иск","право"],contracts:["договор","соглашен","контракт"],accounting:["бухгалтер","счет","счёт","акт","накладн","учет","учёт","отчет","отчёт"],business:["бизнес","ип","самозан","компан"],hr:["кадр","работник","труд","приказ","hr"],realty:["недвиж","аренд","квартир","дом","помещен"],auto:["авто","машин","транспорт","дтп"],education:["образован","обучен","школ","курс","вуз"],medicine:["медицин","здоров","клиник","пациент"],freelance:["фриланс","исполнител","заказчик","nda"],marketplaces:["маркетплейс","ozon","wildberries","яндекс маркет","вб"],guides:["инструкц","гайд","памят"],ai:["ai","ии","искусственн","нейросет","технолог"],checklists:["чек-лист","чеклист","список проверки"],specialists:["специалист","услуг"]

@@ -11,8 +11,8 @@ export default function SpecialistOrders(){
  useEffect(()=>{load()},[user?.id]);
  const draft=(id,key,fallback="")=>drafts[id]?.[key]??fallback; const setDraft=(id,key,value)=>setDrafts(s=>({...s,[id]:{...(s[id]||{}),[key]:value}}));
  async function update(task,patch){setBusy(task.id);setError("");try{await updateSellerServiceTask(task.id,patch);await load()}catch{setError("Не удалось обновить заказ.")}finally{setBusy("")}}
- return <MarketFrame><style>{css}</style><MarketNavigation crumbs={[{label:"ДокМаркет",to:"/"},{label:"Кабинет продавца",to:"/BusinessCabinet"},{label:"Заказы"}]} backTo="/BusinessCabinet"/>
-  <section className="seller-orders-head"><div><span className="market-kicker">КАБИНЕТ ПРОДАВЦА</span><h1 className="market-heading">Заказы на услуги</h1><p className="market-lead">Вся работа идёт внутри заказа: приняли задачу, выполнили, передали результат, клиент подтвердил.</p></div></section>
+ return <MarketFrame><style>{css}</style><MarketNavigation crumbs={[{label:"ДокМаркет",to:"/"},{label:"Кабинет селлера",to:"/BusinessCabinet"},{label:"Заказы"}]} backTo="/BusinessCabinet"/>
+  <section className="seller-orders-head"><div><span className="market-kicker">КАБИНЕТ СЕЛЛЕРА</span><h1 className="market-heading">Заказы на услуги</h1><p className="market-lead">Вся работа идёт внутри заказа: приняли задачу, выполнили, передали результат, клиент подтвердил.</p></div></section>
   {error&&<div className="seller-error">{error}</div>}
   {tasks.length?<div className="seller-task-list">{tasks.map(task=><article className="seller-task market-glass" key={task.id}><div className="seller-task-top"><div><span className={`seller-status s-${task.status}`}>{LABELS[task.status]||task.status}</span><h2>{task.title}</h2><small>Заказ №{String(task.order_id).slice(0,8).toUpperCase()}</small></div><span>{new Date(task.created_at).toLocaleDateString("ru-RU")}</span></div>
     {task.customer_note&&<div className="seller-box"><b>Задача клиента</b><p>{task.customer_note}</p></div>}
