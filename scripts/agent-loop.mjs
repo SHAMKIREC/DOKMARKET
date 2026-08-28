@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 import { spawn } from "node:child_process";
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import process from "node:process";
 
 const MAX_ROUNDS = 5;
 const PASS_SCORE = 9;
-const CODEX_BIN = process.env.CODEX_BIN || "codex";
 const MODEL = process.env.AGENT_LOOP_MODEL || "";
 
 function fail(message) {
@@ -27,10 +26,10 @@ function parseArgs(argv) {
 }
 
 function usage() {
-  console.log(`\nДокМаркет: петля Builder → Reviewer → Auditor\n\nИспользование:\n  npm run agents -- --task "Сделай фичу ..."\n  npm run agents -- --task-file docs/tasks/feature.md\n\nПеременные окружения:\n  CODEX_BIN=codex\n  AGENT_LOOP_MODEL=<модель, если нужно зафиксировать>\n\nСкрипт запускает максимум ${MAX_ROUNDS} кругов. Reviewer и Auditor всегда стартуют отдельными процессами Codex с чистым контекстом и read-only sandbox.\n`);
+  console.log(`\nДокМаркет: петля Builder → Reviewer → Auditor\n\nИспользование:\n  npm run agents -- --task "Сделай фичу ..."\n  npm run agents -- --task-file docs/tasks/feature.md\n\nПеременные окружения:\n  CODEX_BIN=/полный/путь/к/codex\n  AGENT_LOOP_MODEL=<модель, если нужно зафиксировать>\n\nЕсли CODEX_BIN не задан и команда codex не найдена, скрипт автоматически попробует запуск через npx @openai/codex.\n\nСкрипт запускает максимум ${MAX_ROUNDS} кругов. Reviewer и Auditor всегда стартуют отдельными процессами Codex с чистым контекстом и read-only sandbox.\n`);
 }
 
-async function run(command, args, { input = "", inherit = false } = {}) {
+async function run(command, args, { input = "", inherit = false, allowFailure = false } = {}) {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       cwd: process.cwd(),
@@ -39,21 +38,57 @@ async function run(command, args, { input = "", inherit = false } = {}) {
       shell: process.platform === "win32",
     });
     if (inherit) {
-      child.on("error", reject);
-      child.on("close", code => code === 0 ? resolve({ stdout: "", stderr: "" }) : reject(new Error(`${command} exited with ${code}`)));
+      child.on("error", error => allowFailure ? resolve({ stdout: "", stderr: error.message, code: -1 }) : reject(error));
+      child.on("close", code => {
+        if (code === 0 || allowFailure) resolve({ stdout: "", stderr: "", code: code ?? -1 });
+        else reject(new Error(`${command} exited with ${code}`));
+      });
       return;
     }
     let stdout = "";
     let stderr = "";
-    child.stdout.on("data", chunk => { stdout += chunk.toString(); });
-    child.stderr.on("data", chunk => { stderr += chunk.toString(); });
-    child.on("error", reject);
-    child.on("close", code => {
-      if (code !== 0) reject(new Error(`${command} exited with ${code}\n${stderr}`));
-      else resolve({ stdout, stderr });
+    child.stdout?.on("data", chunk => { stdout += chunk.toString(); });
+    child.stderr?.on("data", chunk => { stderr += chunk.toString(); });
+    child.on("error", error => {
+      if (allowFailure) resolve({ stdout, stderr: `${stderr}${error.message}`, code: -1 });
+      else reject(error);
     });
-    child.stdin.end(input);
+    child.on("close", code => {
+      if (code !== 0 && !allowFailure) reject(new Error(`${command} exited with ${code}\n${stderr}`));
+      else resolve({ stdout, stderr, code: code ?? -1 });
+    });
+    child.stdin?.end(input);
   });
+}
+
+async function commandWorks(command, args = ["--version"]) {
+  if (command.includes("/") || command.includes("\\")) {
+    try { await access(command); }
+    catch { return false; }
+  }
+  const result = await run(command, args, { allowFailure: true });
+  return result.code === 0;
+}
+
+async function resolveCodexRunner() {
+  const configured = process.env.CODEX_BIN?.trim();
+  if (configured) {
+    if (!(await commandWorks(configured))) {
+      fail(`CODEX_BIN задан как «${configured}», но команда не запускается. Проверь путь или убери CODEX_BIN.`);
+    }
+    return { command: configured, prefix: [], label: configured };
+  }
+
+  if (await commandWorks("codex")) {
+    return { command: "codex", prefix: [], label: "codex" };
+  }
+
+  if (await commandWorks("npx")) {
+    console.log("[agent-loop] Команда codex не найдена. Пробую запуск через npx @openai/codex.");
+    return { command: "npx", prefix: ["--yes", "@openai/codex"], label: "npx @openai/codex" };
+  }
+
+  fail("Не найден ни codex, ни npx. Установи Node.js/npm и Codex CLI или передай полный путь через CODEX_BIN.");
 }
 
 async function git(args) {
@@ -77,9 +112,15 @@ function codexArgs(sandbox) {
   return args;
 }
 
-async function callAgent({ sandbox, prompt }) {
-  const { stdout } = await run(CODEX_BIN, codexArgs(sandbox), { input: prompt });
-  return stdout.trim();
+async function callAgent({ runner, sandbox, prompt }) {
+  const args = [...runner.prefix, ...codexArgs(sandbox)];
+  try {
+    const { stdout } = await run(runner.command, args, { input: prompt });
+    return stdout.trim();
+  } catch (error) {
+    const details = error?.message || String(error);
+    fail(`Не удалось запустить ${runner.label}.\n${details}\n\nЕсли Codex установлен нестандартно, запусти с CODEX_BIN=/полный/путь/к/codex.`);
+  }
 }
 
 async function currentDiff(base) {
@@ -128,6 +169,8 @@ async function main() {
   }
 
   await ensureRepoReady();
+  const runner = await resolveCodexRunner();
+  console.log(`[agent-loop] Codex runner: ${runner.label}`);
   const base = await git(["rev-parse", args.base]);
   console.log(`[agent-loop] base: ${base}`);
 
@@ -136,19 +179,19 @@ async function main() {
 
   for (let round = 1; round <= MAX_ROUNDS; round += 1) {
     console.log(`\n========== КРУГ ${round}/${MAX_ROUNDS} · BUILDER ==========`);
-    const builder = await callAgent({ sandbox: "workspace-write", prompt: builderPrompt({ task, round, reviewer: reviewerFeedback, auditor: auditorFeedback }) });
+    const builder = await callAgent({ runner, sandbox: "workspace-write", prompt: builderPrompt({ task, round, reviewer: reviewerFeedback, auditor: auditorFeedback }) });
     console.log(builder || "[Builder не оставил отчёт]");
 
     const snapshot = await currentDiff(base);
     if (!snapshot.diff) fail("Builder не создал diff. Задача не считается выполненной.");
 
     console.log(`\n========== КРУГ ${round}/${MAX_ROUNDS} · REVIEWER ==========`);
-    reviewerFeedback = await callAgent({ sandbox: "read-only", prompt: reviewerPrompt({ task, ...snapshot }) });
+    reviewerFeedback = await callAgent({ runner, sandbox: "read-only", prompt: reviewerPrompt({ task, ...snapshot }) });
     console.log(reviewerFeedback);
     const reviewerScores = extractScores(reviewerFeedback);
 
     console.log(`\n========== КРУГ ${round}/${MAX_ROUNDS} · AUDITOR ==========`);
-    auditorFeedback = await callAgent({ sandbox: "read-only", prompt: auditorPrompt({ task, ...snapshot }) });
+    auditorFeedback = await callAgent({ runner, sandbox: "read-only", prompt: auditorPrompt({ task, ...snapshot }) });
     console.log(auditorFeedback);
     const auditorScores = extractScores(auditorFeedback);
 
@@ -158,7 +201,7 @@ async function main() {
     console.log(`\n[agent-loop] Итог круга: ${score}/10`);
     if (score >= PASS_SCORE) {
       console.log(`[agent-loop] PASS: минимальная из шести оценок ${score} ≥ ${PASS_SCORE}.`);
-      console.log("[agent-loop] Изменения оставлены в рабочем дереве для твоего просмотра/коммита.");
+      console.log("[agent-loop] Изменения оставлены в рабочем дереве для просмотра/коммита.");
       return;
     }
 
