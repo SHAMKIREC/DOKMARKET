@@ -30,11 +30,11 @@ export function DocMarketBrand(){
 }
 
 export function DocMarketBottomNav(){
-  const {pathname}=useLocation();
+  const {pathname,hash}=useLocation();
   const items=[
-    ["/","home","Главная",pathname==="/"],
+    ["/","home","Главная",pathname==="/"&&!hash],
     ["/market","store","Каталог",pathname==="/market"||pathname.startsWith("/market/offer")],
-    ["/MyDocuments","docs","Документы",pathname.startsWith("/MyDocuments")],
+    ["/#services","services","Сервисы",pathname==="/"&&hash==="#services"],
     ["/market/favorites","heart","Избранное",pathname.startsWith("/market/favorites")],
     ["/market/cart","bag","Корзина",pathname.startsWith("/market/cart")]
   ];
@@ -84,7 +84,6 @@ export default function DocMarketHeader(){
         <Link to="/seller" onClick={close}><Icon name="store"/>Стать селлером</Link>
         <Link to="/partners" onClick={close}><Icon name="users"/>Партнёры</Link>
         <Link to="/#services" onClick={close}><Icon name="services"/>Сервисы</Link>
-        <Link to="/dosudebka" onClick={close}><Icon name="docs"/>Досудебка</Link>
         <Link to="/about" onClick={close}><Icon name="info"/>О ДокМаркете</Link>
         <Link to="/support" onClick={close}><Icon name="help"/>Помощь и поддержка</Link>
       </div>}
