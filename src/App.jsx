@@ -80,7 +80,7 @@ const AuthenticatedApp = () => (
     <Route path="/market/:direction/:section/:category/:situation" element={<LayoutWrapper currentPageName="Market"><Market /></LayoutWrapper>} />
     <Route path="/market/:direction/:section/:category/:situation/offers" element={<LayoutWrapper currentPageName="Market"><Market /></LayoutWrapper>} />
     <Route path="/template-studio" element={<LayoutWrapper currentPageName="TemplateStudio"><TemplateStudioGuard><TemplateStudio /></TemplateStudioGuard></LayoutWrapper>} />
-    <Route path="/template-studio/new" element={<LayoutWrapper currentPageName="TemplateStudio"><TemplateStudioGuard><TemplateStudioNew /></LayoutWrapper>} />
+    <Route path="/template-studio/new" element={<LayoutWrapper currentPageName="TemplateStudio"><TemplateStudioGuard><TemplateStudioNew /></TemplateStudioGuard></LayoutWrapper>} />
     <Route path="/template-studio/:templateId/edit" element={<LayoutWrapper currentPageName="TemplateStudio"><TemplateStudioGuard><TemplateStudioEditor /></TemplateStudioGuard></LayoutWrapper>} />
     <Route path="/template-studio/:templateId/fill" element={<LayoutWrapper currentPageName="TemplateStudio"><TemplateStudioGuard><TemplateStudioFill /></TemplateStudioGuard></LayoutWrapper>} />
     <Route path="/specialist/materials" element={<ProtectedRoute allowedRoles={['lawyer']}><LayoutWrapper currentPageName="SpecialistMaterials"><SpecialistMaterials /></LayoutWrapper></ProtectedRoute>} />
