@@ -11,11 +11,8 @@ function Icon({name,size=20}){
     user:<><circle cx="12" cy="7.7" r="3.7"/><path d="M5.1 20.4v-.9a6.9 6.9 0 0 1 13.8 0v.9"/><path d="M8.5 16.2c1-.7 2.2-1.1 3.5-1.1s2.5.4 3.5 1.1" opacity=".55"/></>,
     store:<><rect x="4" y="4" width="6.2" height="6.2" rx="1.5"/><rect x="13.8" y="4" width="6.2" height="6.2" rx="1.5"/><rect x="4" y="13.8" width="6.2" height="6.2" rx="1.5"/><rect x="13.8" y="13.8" width="6.2" height="6.2" rx="1.5"/></>,
     home:<><path d="m3.7 10.8 8.3-7.1 8.3 7.1"/><path d="M5.7 9.7v10.6h12.6V9.7M9.3 20.3v-6.1h5.4v6.1"/><path d="M8.2 10.8h7.6" opacity=".5"/></>,
-    docs:<><path d="M7.2 3.4h8.2l3.4 3.4v13.8H7.2z"/><path d="M15.4 3.4v4.2h4.2M10.2 11.2h5.6M10.2 14.6h5.6"/><path d="M4.4 7.2v13.4h10.2" opacity=".55"/></>,
     users:<><circle cx="8.5" cy="8.7" r="3.3"/><circle cx="16.7" cy="9.7" r="2.8"/><path d="M2.7 20.6c.5-4.7 2.5-7.2 5.8-7.2s5.3 2.5 5.8 7.2M14.2 14.3c3.9.1 6.1 2.2 6.7 6.3"/></>,
     services:<><path d="M12 3.2 9.7 8.5 4.4 11l5.3 2.4L12 18.8l2.4-5.4 5.3-2.4-5.3-2.5L12 3.2Z"/><path d="M5 3.8v4M3 5.8h4M19 16.3v4M17 18.3h4"/></>,
-    info:<><circle cx="12" cy="12" r="9"/><path d="M12 10.7v6.1M12 7.2h.01"/></>,
-    help:<><circle cx="12" cy="12" r="9"/><path d="M9.6 9.1a2.6 2.6 0 1 1 3.8 2.3c-.9.5-1.4 1.1-1.4 2.3M12 17.2h.01"/></>,
     close:<path d="M6.2 6.2 17.8 17.8M17.8 6.2 6.2 17.8"/>,
     menu:<><path d="M4.2 7.2h15.6M4.2 12h15.6M4.2 16.8h15.6"/><circle cx="4.2" cy="7.2" r=".5" fill="currentColor" stroke="none"/></>
   };
@@ -80,12 +77,10 @@ export default function DocMarketHeader(){
       </div>
       {menuOpen&&<div className="docmarket-mobile-menu">
         <Link to="/market" onClick={close}><Icon name="store"/>Каталог документов</Link>
+        <Link to="/#services" onClick={close}><Icon name="services"/>Сервисы</Link>
         <Link to={user?"/Dashboard":"/Login"} onClick={close}><Icon name="user"/>{user?"Личный кабинет":"Войти"}</Link>
         <Link to="/seller" onClick={close}><Icon name="store"/>Стать селлером</Link>
         <Link to="/partners" onClick={close}><Icon name="users"/>Партнёры</Link>
-        <Link to="/#services" onClick={close}><Icon name="services"/>Сервисы</Link>
-        <Link to="/about" onClick={close}><Icon name="info"/>О ДокМаркете</Link>
-        <Link to="/support" onClick={close}><Icon name="help"/>Помощь и поддержка</Link>
       </div>}
     </header>
     <DocMarketBottomNav/>
