@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { pagesConfig } from './pages.config'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider } from '@/lib/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -80,7 +80,7 @@ const AuthenticatedApp = () => (
     <Route path="/market/:direction/:section/:category/:situation" element={<LayoutWrapper currentPageName="Market"><Market /></LayoutWrapper>} />
     <Route path="/market/:direction/:section/:category/:situation/offers" element={<LayoutWrapper currentPageName="Market"><Market /></LayoutWrapper>} />
     <Route path="/template-studio" element={<LayoutWrapper currentPageName="TemplateStudio"><TemplateStudioGuard><TemplateStudio /></TemplateStudioGuard></LayoutWrapper>} />
-    <Route path="/template-studio/new" element={<LayoutWrapper currentPageName="TemplateStudio"><TemplateStudioGuard><TemplateStudioNew /></TemplateStudioGuard></LayoutWrapper>} />
+    <Route path="/template-studio/new" element={<LayoutWrapper currentPageName="TemplateStudio"><TemplateStudioGuard><TemplateStudioNew /></LayoutWrapper>} />
     <Route path="/template-studio/:templateId/edit" element={<LayoutWrapper currentPageName="TemplateStudio"><TemplateStudioGuard><TemplateStudioEditor /></TemplateStudioGuard></LayoutWrapper>} />
     <Route path="/template-studio/:templateId/fill" element={<LayoutWrapper currentPageName="TemplateStudio"><TemplateStudioGuard><TemplateStudioFill /></TemplateStudioGuard></LayoutWrapper>} />
     <Route path="/specialist/materials" element={<ProtectedRoute allowedRoles={['lawyer']}><LayoutWrapper currentPageName="SpecialistMaterials"><SpecialistMaterials /></LayoutWrapper></ProtectedRoute>} />
@@ -89,7 +89,13 @@ const AuthenticatedApp = () => (
   </Routes>
 );
 
+function AssistantGate() {
+  const { pathname } = useLocation();
+  const hidden = ['/login', '/register', '/registerlawyer'].includes(pathname.toLowerCase());
+  return hidden ? null : <DocMarketAssistant />;
+}
+
 function App() {
-  return <AuthProvider><QueryClientProvider client={queryClientInstance}><Router><ScrollToHash /><AuthenticatedApp /><DocMarketAssistant /></Router><Toaster /></QueryClientProvider></AuthProvider>
+  return <AuthProvider><QueryClientProvider client={queryClientInstance}><Router><ScrollToHash /><AuthenticatedApp /><AssistantGate /></Router><Toaster /></QueryClientProvider></AuthProvider>
 }
 export default App
