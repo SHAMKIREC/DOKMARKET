@@ -1,0 +1,38 @@
+/* Final pass matched to the approved mobile reference. */
+@media (max-width:760px){
+  /* Keep vertical rhythm compact across marketplace screens. */
+  .dm-page,.market-page,.seller-cabinet,.seller-page,.specialist-page,.studio-page,.guide-page,.dm-dos-home{padding-bottom:64px!important}
+  .dm-shelf,.dm-category-section,.dm-task-section,.dm-dos-section,.dm-dos-flow,.dm-dos-trust,.guide-section{margin-bottom:16px!important}
+  .guide-section{margin-top:28px!important}.guide-cta{margin-top:30px!important}.guide-hero{margin-bottom:28px!important}
+  .dm-dos-home{padding-top:10px!important}.dm-dos-section{margin-bottom:18px!important}.dm-dos-flow{margin-bottom:18px!important}
+
+  /* Approved category cards: the artwork itself is the hero, not a flat icon tile. */
+  .dm-category-card{height:96px!important;min-height:96px!important;padding:0!important;overflow:hidden!important;position:relative!important;border:1px solid #5b4428!important;background:#0b1118!important;box-shadow:inset 0 1px rgba(255,255,255,.04),0 8px 18px rgba(0,0,0,.2)!important}
+  .dm-category-art{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;opacity:1!important;filter:saturate(.9) brightness(.8) contrast(1.06)!important;transform:scale(1.035)!important;background-repeat:no-repeat!important}
+  .dm-category-card:before{content:"";position:absolute;inset:0;z-index:1;background:radial-gradient(circle at 50% 30%,rgba(235,170,75,.08),transparent 40%),linear-gradient(180deg,rgba(4,8,12,.03),rgba(4,8,12,.12) 48%,rgba(4,8,12,.92));pointer-events:none}
+  .dm-category-card:after{content:"";position:absolute;inset:5px;z-index:2;border:1px solid rgba(235,170,75,.12);border-radius:10px;pointer-events:none;background:none!important}
+  .dm-category-card strong{position:absolute!important;left:7px!important;right:7px!important;bottom:7px!important;z-index:3!important;color:#fff!important;font-size:.64rem!important;line-height:1.05!important;font-weight:850!important;text-shadow:0 2px 7px #000!important}
+
+  /* Product and service shelves: less height, stronger artwork. */
+  .dm-product-card{min-height:0!important}.dm-product-preview{height:112px!important}.dm-product-art{filter:saturate(.86) brightness(.82) contrast(1.05)!important}
+  .dm-service-tile{min-height:102px!important}.dm-service-picture{filter:saturate(.86) brightness(.82) contrast(1.05)!important}
+  .dm-home-links{margin-top:8px!important;margin-bottom:10px!important}
+
+  /* Remove remaining seller-promo patterns from the customer home if legacy markup survives in cache. */
+  .dm-home-links a[href="/seller"],.dm-home-links a[href*="seller"]{display:none!important}
+
+  /* Guide/Dosudebka: blank glass squares become visible bronze utility markers. */
+  .guide-icon,.dm-dos-card>div{background:radial-gradient(circle at 35% 25%,rgba(239,177,91,.2),transparent 40%),linear-gradient(145deg,#251b10,#10161d)!important;border-color:#654a27!important;color:#efb05a!important;box-shadow:inset 0 0 0 3px rgba(239,176,88,.035)!important}
+  .guide-icon:empty:before{content:"✦";font-size:18px;font-weight:900;color:#efb05a}
+  .guide-error{position:relative!important}.guide-error:before{content:"!";display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:11px;background:linear-gradient(145deg,#251b10,#10161d);border:1px solid #654a27;color:#efb05a;font-weight:900}
+  .guide-evidence{position:relative!important}.guide-evidence:before{content:"▣";display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:11px;background:linear-gradient(145deg,#151b20,#10161d);border:1px solid #314355;color:#d9a257;font-size:17px}
+  .guide-evidence .guide-icon,.guide-error .guide-icon{display:none!important}
+  .guide-glass,.guide-step,.guide-card,.guide-evidence,.guide-error,.guide-deadlines,.guide-cta{border-radius:14px!important}
+
+  /* Sticky subnav must not cover headings. */
+  .dm-dos-home,.guide-page{scroll-padding-top:118px!important}.dm-dos-shell>section:first-child,.guide-wrap>section:first-child{scroll-margin-top:118px!important}
+
+  /* Floating assistant and bottom navigation must never cover content. */
+  .dm-assistant-fab{right:10px!important;bottom:64px!important;width:32px!important;height:32px!important;min-width:32px!important;min-height:32px!important;opacity:.65!important}
+  .dm-global-bottom{height:48px!important}
+}
