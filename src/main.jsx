@@ -9,6 +9,7 @@ import '@/styles/mobile-hotfix.css'
 import '@/styles/mobile-home-polish.css'
 import '@/styles/marketplace-ux-pass.css'
 import '@/styles/premium-mobile-final.css'
+import '@/styles/reference-final-pass.css'
 
 // Unified DocMarket visual system entrypoint.
 ReactDOM.createRoot(document.getElementById('root')).render(
