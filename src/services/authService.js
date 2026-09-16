@@ -3,6 +3,7 @@ import {
   ensureSession,
   getOwnProfile,
   getStoredSession,
+  restRequest,
   signInWithPassword,
   signOut,
   signUp,
@@ -26,12 +27,20 @@ async function register(data,role){
  if(!ALLOWED_ROLES.has(role))throw new Error("INVALID_ROLE");
  const email=normalizeEmail(data.email);if(!data.fullName?.trim()||!email||!data.password)throw new Error("REQUIRED_FIELDS");
  const planData=defaultPlan(role);let result;
- try{result=await signUp(email,String(data.password),{role,full_name:data.fullName.trim(),phone:String(data.phone||"").trim(),organization_name:role==="lawyer"?String(data.organizationName||"").trim():"",inn:role==="lawyer"?String(data.inn||"").trim():"",plan_data:planData})}catch(error){if(/already registered|already been registered|user already/i.test(String(error?.message)))throw new Error("EMAIL_EXISTS");throw error}
+ try{result=await signUp(email,String(data.password),{full_name:data.fullName.trim(),phone:String(data.phone||"").trim(),organization_name:role==="lawyer"?String(data.organizationName||"").trim():"",inn:role==="lawyer"?String(data.inn||"").trim():"",plan_data:planData})}catch(error){if(/already registered|already been registered|user already/i.test(String(error?.message)))throw new Error("EMAIL_EXISTS");throw error}
  if(!result?.access_token||!result?.user?.id){const confirmationError=new Error("EMAIL_CONFIRMATION_REQUIRED");confirmationError.email=email;throw confirmationError}
  const profile=await getOwnProfile(result.user.id);return saveUserCache(normalizeUser(result.user,profile));
 }
 export function registerUser(data){return register(data,"user")}
-export function registerLawyer(data){return register(data,"lawyer")}
-export async function updateCurrentUser(updates){const session=await ensureSession();if(!session?.user?.id)throw new Error("AUTH_REQUIRED");const allowed={};if(updates.fullName!==undefined)allowed.full_name=String(updates.fullName).trim();if(updates.full_name!==undefined)allowed.full_name=String(updates.full_name).trim();if(updates.phone!==undefined)allowed.phone=String(updates.phone).trim();if(updates.organizationName!==undefined)allowed.organization_name=String(updates.organizationName).trim();if(updates.inn!==undefined)allowed.inn=String(updates.inn).trim();if(updates.planData&&typeof updates.planData==="object")allowed.plan_data=updates.planData;const profile=await updateOwnProfile(session.user.id,allowed);return saveUserCache(normalizeUser(session.user,profile))}
+export async function registerLawyer(data){
+ const user=await register(data,"lawyer");
+ try{
+  await restRequest("specialist_applications",{method:"POST",body:{user_id:user.id,full_name:String(data.fullName||"").trim(),phone:String(data.phone||"").trim(),organization_name:String(data.organizationName||"").trim(),inn:String(data.inn||"").trim(),status:"pending"},prefer:"return=representation"});
+ }catch(error){
+  if(!/duplicate|unique/i.test(String(error?.message)))throw error;
+ }
+ return {...user,specialistApplicationStatus:"pending"};
+}
+export async function updateCurrentUser(updates){const session=await ensureSession();if(!session?.user?.id)throw new Error("AUTH_REQUIRED");const allowed={};if(updates.fullName!==undefined)allowed.full_name=String(updates.fullName).trim();if(updates.full_name!==undefined)allowed.full_name=String(updates.full_name).trim();if(updates.phone!==undefined)allowed.phone=String(updates.phone).trim();if(updates.organizationName!==undefined)allowed.organization_name=String(updates.organizationName).trim();const profile=await updateOwnProfile(session.user.id,allowed);return saveUserCache(normalizeUser(session.user,profile))}
 export async function logout(){await signOut();saveUserCache(null);return null}
 export function loginAsDemo(){throw new Error("DEMO_LOGIN_DISABLED")}
