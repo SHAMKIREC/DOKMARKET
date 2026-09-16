@@ -1,5 +1,4 @@
 import { restRequest } from "@/lib/supabaseRest";
-import { createServiceTasks } from "@/marketplace/services/serviceTaskService";
 
 function totalOf(items = []) {
   return items.reduce((sum, item) => sum + Number(item.price || 0), 0);
@@ -57,7 +56,11 @@ export async function createDraftOrder(userId, items = []) {
     },
   }));
   await restRequest("order_items", { method: "POST", body: payload, prefer: "return=minimal" });
-  await createServiceTasks(order, items);
+
+  // A draft is only a saved checkout snapshot. Do not create a specialist task
+  // here: otherwise an unpaid/unconfirmed cart appears as real work in the
+  // specialist cabinet. Tasks must be dispatched only by a trusted checkout /
+  // payment-confirmation path after the order leaves draft state.
   return order;
 }
 
